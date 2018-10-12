@@ -1,0 +1,6 @@
+This directory contains the results of the naive-data-reuse, ThresholdoutAUC, and oracle-classifier simulations, which were performed on the Tulane University high performance computing system (HPC) Cypress (https://crsc.tulane.edu/).
+These .csv files were obtained in the following way:
+
+* After the simulations were performed on the Tulane University HPC Cypress, the results of each simulation run were saved in directories such as `results/Cypress_Tulane_HPC/naive_sim/` or `results/Cypress_Tulane_HPC/thresholdout_sim/`.
+* Since 100 simulation runs were performed for each data reuse method, the directories such as `results/Cypress_Tulane_HPC/naive_sim/` or `results/Cypress_Tulane_HPC/thresholdout_sim/` contained 100 files each.
+* The scripts `naive_sim/combine_HPC_results.R` and `thresholdout_sim/combine_HPC_results.R` were used to combine the individual 100 result files into a single .csv file for each data reuse method, resulting in .csv files such as `cypress_naive_all_results.csv` or `cypress_thresholdout_all_results.csv`. These aggregated result files are included here. The hundreds of result files of the individual simulation runs are not included in this version of the code due to space considerations.

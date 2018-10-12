@@ -1,0 +1,16 @@
+#!/bin/bash
+#SBATCH --mail-type=FAIL
+#SBATCH --mail-user=agossman@tulane.edu
+#SBATCH --output=slurm_out/slurm-%A_%a.out
+#SBATCH --qos=long
+#SBATCH --job-name=thresh
+#SBATCH --array=64,59,8,47,99,17,91,51,21,56,89,27,28,93,95
+#SBATCH --nodes=1
+#SBATCH --ntasks-per-node=1
+#SBATCH --cpus-per-task=2
+#SBATCH --time=7-00:00:00
+#SBATCH --mem=64000
+
+module load R/3.4.1-intel
+
+Rscript holdout_reuse.R

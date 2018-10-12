@@ -1,0 +1,14 @@
+#!/bin/bash
+#SBATCH --output=slurm_out/slurm-%A_%a.out
+#SBATCH --qos=long
+#SBATCH --job-name=naive
+#SBATCH --array=8,17,18,21,26,27,28,39,41,42,46,47,51,53,56,57,59,64,68,77,80,85,86,89,91,93,94,95,99
+#SBATCH --nodes=1
+#SBATCH --ntasks-per-node=1
+#SBATCH --cpus-per-task=2
+#SBATCH --time=7-00:00:00
+#SBATCH --mem=64000
+
+module load R/3.4.1-intel
+
+Rscript holdout_reuse.R
