@@ -2,9 +2,10 @@ Except as outlined below, our software is governed by the [CC0 1.0 Universal lic
 
 Our software uses several libraries with their own licenses that must be followed:
 
-* [GNU General Public License version 2 or any later version](https://www.gnu.org/licenses/gpl.html): This license is used by the [SLURM Workload Manager](https://slurm.schedmd.com/disclaimer.html), and by the R packages [xtable](https://CRAN.R-project.org/package=xtable), [caret](https://CRAN.R-project.org/package=caret), and [ROCR](https://CRAN.R-project.org/package=ROCR).
+* [GNU General Public License version 2](https://www.gnu.org/licenses/gpl.html): This license is used by the R packages [doParallel](https://CRAN.R-project.org/package=doParallel), [e1071](https://CRAN.R-project.org/package=e1071), and [glmnet](https://CRAN.R-project.org/package=glmnet).
+* [GNU General Public License version 2 or any later version](https://www.gnu.org/licenses/gpl.html): This license is used by the [SLURM Workload Manager](https://slurm.schedmd.com/disclaimer.html), and by the R packages [xtable](https://CRAN.R-project.org/package=xtable), [caret](https://CRAN.R-project.org/package=caret), [ROCR](https://CRAN.R-project.org/package=ROCR), and [randomForest](https://CRAN.R-project.org/package=randomForest).
 * [GNU General Public License version 3](https://www.gnu.org/licenses/gpl.html): This license is used by the R packages [VGAM](https://CRAN.R-project.org/package=VGAM), and [tidyverse](https://CRAN.R-project.org/package=tidyverse).
-* [MIT License](https://opensource.org/licenses/MIT): This license is used by the R packages [plyr](https://CRAN.R-project.org/package=plyr), [dplyr](https://CRAN.R-project.org/package=dplyr), and [tidyr](https://CRAN.R-project.org/package=tidyr).
+* [MIT License](https://opensource.org/licenses/MIT): This license is used by the R packages [plyr](https://CRAN.R-project.org/package=plyr), [dplyr](https://CRAN.R-project.org/package=dplyr), [tidyr](https://CRAN.R-project.org/package=tidyr), and [fastAdaboost](https://CRAN.R-project.org/package=fastAdaboost).
 * [Apache License Version 2.0](https://www.apache.org/licenses/LICENSE-2.0): This license is used by the R packages [tictoc](https://CRAN.R-project.org/package=tictoc), and [RColorBrewer](https://CRAN.R-project.org/package=RColorBrewer).
 
 ---

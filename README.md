@@ -18,7 +18,7 @@ Directories 1, 2, 3 are referred to as "simulation directories" in the following
 
 ## How to change parameter settings before running the simulations
 
-Before the simulations are run, many simulation settings (such as the data size, number of round of adaptive learning, ThresholdoutAUC hyperparamenters, etc.) can be set/changed by modifying `set_params.R` file.
+Before the simulations are run, many simulation settings (such as sample size, number of features, number of rounds of adaptive learning, ThresholdoutAUC hyperparamenters, etc.) can be set/changed by modifying `set_params.R` file.
 
 Moreover, the file paths where the simulation results should be saved can be specified at the bottom of the `holdout_reuse.R` script within each simulation directory.
 The coded naming conventions of all saved files are based on environment variables provided by the SLURM HPC workload manager (see below). If you are not using SLURM please replace the respective variables (all starting with `SLURM_`) with something suitable for your system, in order to save the results at a desired location with unique file names.
@@ -52,3 +52,5 @@ The coded naming conventions of all saved files are based on environment variabl
 The results of individual simulation runs are combined into a large `.csv` file using the scripts in the `results` directory.
 
 Subsequently, a number of visualization can be generated from the simulation results using the R scripts included in the directory `visualizations`.
+
+The resulting figures can be found in the directory `visualizations/img`.
