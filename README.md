@@ -4,7 +4,7 @@ The ThresholdoutAUC procedure (based on [the Thresholdout or reusable holdout me
 
 This repository includes source code that can be used to perform extensive simulation studies, which show that ThresholdoutAUC substantially reduces the problem of overfitting to the test data under the simulation conditions, at the cost of a mild additional uncertainty on the reported test performance.
 
-While some of the subdirectories contain README files and code comments that describe the files of the respective subdirectory, in the following we provide a general overview of the code contained in this repository.
+In the following we provide a general overview of the code contained in this repository.
 
 ## The simulations
 
@@ -31,21 +31,21 @@ Within each simulation directory we provide the `.srun` scripts that we used to 
 For example, 100 runs of the "naive data reuse" simulations can be performed with:
 
 ```
-sbatch holdout_reuse.srun
-sbatch holdout_reuse_long_jobs.srun
+sbatch ./naive_data_reuse_simulation/holdout_reuse.srun
+sbatch ./naive_data_reuse_simulation/holdout_reuse_long_jobs.srun
 ```
 
-It should not be difficult to adjust the code for using an HPC job scheduling system other than SLURM, since each of the `.srun` scripts simply submits the same `holdout_reuse.R` script with a different random number generator seed many times.
-Please let us know in the "issues" section of this repository if you require assistance.
+It should not be difficult to adjust the code for using an HPC job scheduling system other than SLURM, since each of the `.srun` scripts simply repeatedly (100 times) submits the same `holdout_reuse.R` script with a different random number generator seed.
+Please let us know under the Issues tab of this repository if you require assistance.
 
 ## Performing a single simulation run on your local machine
 
 When a simulation script, named `holdout_reuse.R` in each of the three simulation directories, is run, a single simulation run is performed.
-A single simulation run includes training five classification algorithms in an adaptive fashion through 30 rounds of adaptive learning using a single fixed test dataset.
+A single simulation run includes training five types of classification algorithms (logistics regression, regularized logistic regression, linear SVM, random forest, and AdaBoost) in an adaptive fashion through 30 rounds of adaptive learning using a single fixed test dataset.
 This code can be run interactively in R.
 
 The results of a single simulation run are saved to a `.csv` file using the file path specified at the bottom of the respective `holdout_reuse.R` script.
-The coded naming conventions of all saved files are based on environment variables provided by the SLURM HPC workload manager (e.g., the job number within the job array). If you are not using SLURM please replace the respective variables (all starting with `SLURM_`) with something suitable for your system to save the results at a desired location.
+The coded naming conventions of all saved files are based on environment variables provided by the SLURM HPC workload manager (e.g., the job number within the job array). If you are not using SLURM please replace the respective variables (all starting with `SLURM_`) with something suitable for your system to save the results at the desired location.
 
 ## Visualization of the results
 
