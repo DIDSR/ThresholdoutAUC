@@ -53,6 +53,11 @@ print(tab, file = "signed_and_absolute_error_LaTeX_table.txt")
 
 #--- Plot error distribution (density) by classifier
 
+avg_error_df <- error_df %>%
+  select(error, holdout_reuse, method) %>%
+  group_by(method, holdout_reuse) %>%
+  summarize(error_mean = mean(error), error_sd = sd(error), n_reps = n()) %>% tbl_df()
+
 # (GLM and Adaboost only - PDF)
 error_df %>% left_join(avg_error_df) %>%
   filter(method == "Logistic regression (GLM)" | method == "AdaBoost") %>%
