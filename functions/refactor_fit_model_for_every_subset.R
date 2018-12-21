@@ -68,7 +68,7 @@ fit_model_for_every_subset <- function(tname, bname, classifier, x_train, y_trai
   t_stat <- rep(NA, p)
   t_degf <- length(y_train) - 2
   for (i in 1:p) {
-    feature <- x_train[ , i]
+    feature <- x_train[, i]
     a <- feature[y_train == labelvec[1L]]
     b <- feature[y_train == labelvec[2L]]
     t_stat[i] <- get_t_stat(a, b)
@@ -126,7 +126,8 @@ fit_model_for_every_subset <- function(tname, bname, classifier, x_train, y_trai
       # using subsets of size at least 2 in this case, because for example
       # glmnet requires at least two predictors
       all_subsets <- lapply(2:length(new_signif_vars),
-                            function(x) combn(new_signif_vars, x))
+                            function(x) combn(new_signif_vars, x))   # all combinations
+      # # # all_subsets  are list
     } else if (length(features_to_keep) == 1) {
       # using subsets of size at least 1 in this case, because for example
       # glmnet requires at least two predictors

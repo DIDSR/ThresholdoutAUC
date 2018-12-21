@@ -21,50 +21,7 @@ source("general_simulation.R")
 # thresholdout algorithm
 source("../functions/thresholdout_auc.R")
 
-#
-
-
-genProb <- function(classifier, n_train, n_train_increase, n_adapt_rounds, n_holdout,
-                       n_test, p, n_signif, signif_level, thresholdout_threshold,
-                       thresholdout_sigma, thresholdout_noise_distribution,
-                       verbose = FALSE, sanity_checks = TRUE) {
-
-  n_train_total <- n_train + n_train_increase * n_adapt_rounds
-  n <- n_train_total + n_holdout + n_test
-
-  #--- generate train, holdout, and test data
-
-  # generate data frames, while making sure that the distribution of y is somewhat balanced
-  pos_prop_train <- 0
-  pos_prop_train_initial <- 0
-  pos_prop_holdout <- 0
-  pos_prop_test <- 0
-  while(!( (pos_prop_train >= 0.2 & pos_prop_train <= 0.8) &
-           (pos_prop_train_initial >= 0.2 & pos_prop_train_initial <= 0.8) &
-           (pos_prop_holdout >= 0.2 & pos_prop_holdout <= 0.8) &
-           (pos_prop_test >= 0.2 & pos_prop_test <= 0.8) )) {
-    xy_full <- generate_iid_gaussian_data(n = n, p = p, n_signif = n_signif)
-    xy_train_total <- dplyr::slice(xy_full, 1:n_train_total)
-    xy_holdout <- dplyr::slice(xy_full, (n_train_total+1):(n_train_total + n_holdout))
-    xy_test <- dplyr::slice(xy_full,
-                            (n_train_total + n_holdout + 1):(n_train_total + n_holdout + n_test))
-
-    pos_prop_train <- sum(xy_train_total$y) / nrow(xy_train_total)
-    pos_prop_train_initial <- sum(xy_train_total[1:n_train, ]$y) / nrow(xy_train_total[1:n_train, ])
-    pos_prop_holdout <- sum(xy_holdout$y) / nrow(xy_holdout)
-    pos_prop_test <- sum(xy_test$y) / nrow(xy_test)
-  }
-}
-
-
-
-
-
-#--- A function that successively fits classifiers of specified type on variables selected via
-# 2-sample t-tests. Each model is fit with an increased number of cases,
-# while retaining all variables selected in the previous model.
-
-function() {
+getMlrTask = function() {
   n_all = 208
   n_train = 50  ## begin
   n_train_increase = 5
@@ -105,27 +62,33 @@ function() {
   #xy_test <- dplyr::slice(xy_full, (n_train_total + n_holdout + 1):(n_train_total + n_holdout + n_test))
   xy_test <- getTaskData(sonar.task)[ind_test, ]
 
-
-  return(list(ind_test = ind_test, ind_val = ind_val))
+  return(list(n_train = n_train, x_train_total = x_train_total, y_train_total = y_train_total, ind_test = ind_test, ind_val = ind_val, x_train_total = x_train_total, x_holdout = x_holdout, y_holdout = y_holdout, x_test = x_test, y_test = y_test))
 }
 
 
 
-
-
-
-
+#--- A function that successively fits classifiers of specified type on variables selected via
+# 2-sample t-tests. Each model is fit with an increased number of cases,
+# while retaining all variables selected in the previous model.
 fit_models = function(tname, bname, classifier, n_train, n_train_increase, n_adapt_rounds, n_holdout, n_test, p, n_signif, signif_level, thresholdout_threshold, thresholdout_sigma, thresholdout_noise_distribution, verbose = FALSE, sanity_checks = TRUE) {
+  tuple = getMlrTask()
   p_train_total <- 1
   p_holdout <- 1
   p_test <- 1
+  x_train_total = tuple$x_train_total
+  ind_test = tuple$ind_test
+  y_train_total = tuple$y_train_total
+  x_holdout = tuple$x_holdout
+  x_test = tuple$x_test
+  y_test = tuple$y_test
+  y_holdout = tuple$y_holdout
+  n_train = tuple$n_train
   #p_train_total <- xy_train_total$p
   #p_holdout <- xy_holdout$p
   #p_test <- xy_test$p
   features_to_keep <- c() # this is updated in every round to store names of the selected features
   #--- train the first model without looking at the holdout
   if (verbose) { print("Fitting initial model") }
-
   # define train data for this iteration
   x_train <- x_train_total[1:n_train, ]
   y_train <- y_train_total[1:n_train]
@@ -240,6 +203,8 @@ run_sim <- function(method, p) {
   source("../set_params.R")
   method = "glm"
   bname = "R"
+  tname = "Class"
+  p$p = 60
   sim_out <- fit_models(tname = tname, bname = bname, classifier = method, n_train = p$n_train,
                         n_train_increase = p$n_train_increase,
                         n_adapt_rounds = p$n_adapt_rounds,
