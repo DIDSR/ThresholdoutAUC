@@ -1,3 +1,29 @@
+library(caret)
+library(plyr)
+library(dplyr)
+library(tidyr)
+#library(VGAM) # for laplace distribution
+library(ROCR)
+library(tictoc)
+
+#--- load functions
+
+# functions to calculate p-values
+source("../functions/p-values.R")
+# functions to generate datasets
+source("../functions/data_generation.R")
+# a function to fit classification models for every subset of the most significant predictors
+source("../functions/refactor_fit_model_for_every_subset.R")
+# set simulation parameters (such as number of cases, number of features, etc.)
+source("../set_params.R")
+# functions to run the main simulation one time for a specified method
+source("general_simulation.R")
+# thresholdout algorithm
+source("../functions/thresholdout_auc.R")
+
+#
+
+
 genProb <- function(classifier, n_train, n_train_increase, n_adapt_rounds, n_holdout,
                        n_test, p, n_signif, signif_level, thresholdout_threshold,
                        thresholdout_sigma, thresholdout_noise_distribution,
@@ -46,19 +72,20 @@ function() {
   n_train_total = 100
   n_holdout = 80
   n_test = 28
-  ind_tr_total = 1:n_train_total
-  ind_val = ((n_train_total + 1) : (n_train_total + n_holdout))
-  ind_test = ((n_train_total + n_holdout + 1L) : (n))
+  ind_all = sample(n_all)
+  ind_tr_begin = ind_all[1:n_train]
+  ind_tr_total = ind_all[1:n_train_total]
+  ind_val = ind_all[((n_train_total + 1) : (n_train_total + n_holdout))]
+  ind_test = ind_all[((n_train_total + n_holdout + 1L) : (n_all))]
   require(mlr)
   require(dplyr)
   sonar.task
   dfpair = getTaskData(sonar.task, target.extra = T)
-  dfpair$data
   names(dfpair)
-  getTargetNames(sonar.task)
   tname = mlr::getTaskTargetNames(sonar.task)
 # matrices
   p = getTaskNFeats(sonar.task)
+  classifier = "glm"
 }
 
 fit_models <- function(classifier, n_train, n_train_increase, n_adapt_rounds, n_holdout,
@@ -66,10 +93,9 @@ fit_models <- function(classifier, n_train, n_train_increase, n_adapt_rounds, n_
                        thresholdout_sigma, thresholdout_noise_distribution,
                        verbose = FALSE, sanity_checks = TRUE) {
 
-  info$n_train
-  n_train_total <- n_train + n_train_increase * n_adapt_rounds
-  n <- n_train_total + n_holdout + n_test
-  xy_train_total = df[ind_tr_total, ]
+  #n_train_total <- n_train + n_train_increase * n_adapt_rounds
+  #n <- n_train_total + n_holdout + n_test
+  xy_train_total = getTaskData(sonar.task)[ind_tr_total, ]
   x_train_total <- as.matrix(dfpair$data[ind_tr_total, ])
 
   x_holdout <- as.matrix(dfpair$data[ind_val, ])
@@ -80,9 +106,21 @@ fit_models <- function(classifier, n_train, n_train_increase, n_adapt_rounds, n_
   y_holdout <- dfpair$target[ind_val]
   y_test <- dfpair$target[ind_test]
 
+  ##
+  #xy_holdout <- dplyr::slice(xy_full, (n_train_total+1):(n_train_total + n_holdout))
+  xy_holdout = getTaskData(sonar.task)[ind_val, ]
+
+  #xy_test <- dplyr::slice(xy_full, (n_train_total + n_holdout + 1):(n_train_total + n_holdout + n_test))
+  xy_test <- getTaskData(sonar.task)[ind_test, ]
+  #########################################################?
+  p_train_total <- 1
+  p_holdout <- 1
+  p_test <- 1
   #p_train_total <- xy_train_total$p
   #p_holdout <- xy_holdout$p
   #p_test <- xy_test$p
+
+  ##
 
   features_to_keep <- c() # this is updated in every round to store names of the selected features
 
@@ -94,14 +132,14 @@ fit_models <- function(classifier, n_train, n_train_increase, n_adapt_rounds, n_
   y_train <- y_train_total[1:n_train]
 
   # fit only one model: the one with the two most significant features
-  model_fit_results <- fit_model_for_every_subset(classifier = classifier,
+  model_fit_results <- fit_model_for_every_subset(tname = tname, classifier = classifier,
                                                   x_train = x_train, y_train = y_train,
                                                   x_holdout = x_holdout, y_holdout = y_holdout,
                                                   p_holdout = p_holdout, x_test = x_test,
                                                   y_test = y_test, p = p,
                                                   features_to_keep = features_to_keep,
                                                   signif_level = 0, # (this forces the function to consider 2 most significant features only)
-                                                  verbose = verbose, sanity_checks = sanity_checks)
+                                                  verbose = F, sanity_checks = T)
 
   if (length(model_fit_results$fitted_models) > 1) { stop("Something went wrong when fitting initial model!") }
 
