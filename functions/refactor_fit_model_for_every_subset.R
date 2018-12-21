@@ -1,8 +1,6 @@
 # An auxilliary function used in fit_model_for_every_subset below in order to
-
-  bname = "R"
 # compute AUC from a fitted model on training, holdout, and testing datasets
-get_auc <- function(tname, fitted_model, features, x_train, y_train,
+get_auc <- function(tname, bname, fitted_model, features, x_train, y_train,
                     x_holdout, y_holdout, p_holdout, x_test, y_test) {
   cv_auc <- max(fitted_model$results$ROC)
 
@@ -60,7 +58,7 @@ get_auc <- function(tname, fitted_model, features, x_train, y_train,
 
 # A function to fit classification models for every subset of the the most
 # significant predictors. Any classifier available in the caret package can be used.
-fit_model_for_every_subset <- function(tname, classifier, x_train, y_train,
+fit_model_for_every_subset <- function(tname, bname, classifier, x_train, y_train,
                                        x_holdout, y_holdout, p_holdout,
                                        x_test, y_test, p, features_to_keep,
                                        signif_level, verbose, sanity_checks) {
@@ -100,6 +98,7 @@ fit_model_for_every_subset <- function(tname, classifier, x_train, y_train,
   selected_features <- list()
   auc <- NULL
 
+
   if (length(new_signif_vars) == 0) { # i.e., no new features were selected
     # in this case just fit a single model with the features in features_to_keep
     if (verbose) { print("No new features identified!") }
@@ -116,7 +115,7 @@ fit_model_for_every_subset <- function(tname, classifier, x_train, y_train,
                           metric = "ROC")
     fitted_models[[1]] <- single_model
     selected_features[[1]] <- features_to_keep
-    auc <- get_auc(tname = tname, fitted_model = single_model, features = features_to_keep,
+    auc <- get_auc(tname = tname, bname = bname, fitted_model = single_model, features = features_to_keep,
                    x_train = x_train, y_train = y_train,
                    x_holdout = x_holdout, y_holdout = y_holdout,
                    p_holdout = p_holdout, x_test = x_test, y_test = y_test)
@@ -157,7 +156,7 @@ fit_model_for_every_subset <- function(tname, classifier, x_train, y_train,
                                 metric = "ROC")
         fitted_models[[ length(fitted_models) + 1 ]] <- fitted_model_i
         selected_features[[ length(selected_features) + 1 ]] <- features
-        auc_i <- get_auc(tname = tname, fitted_model = fitted_model_i, features = features,
+        auc_i <- get_auc(tname = tname, bname = bname, fitted_model = fitted_model_i, features = features,
                          x_train = x_train, y_train = y_train,
                          x_holdout = x_holdout, y_holdout = y_holdout,
                          p_holdout = p_holdout, x_test = x_test, y_test = y_test)

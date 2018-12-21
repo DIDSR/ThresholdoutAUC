@@ -86,18 +86,10 @@ function() {
 # matrices
   p = getTaskNFeats(sonar.task)
   classifier = "glm"
-}
-
-fit_models <- function(classifier, n_train, n_train_increase, n_adapt_rounds, n_holdout,
-                       n_test, p, n_signif, signif_level, thresholdout_threshold,
-                       thresholdout_sigma, thresholdout_noise_distribution,
-                       verbose = FALSE, sanity_checks = TRUE) {
-
-  #n_train_total <- n_train + n_train_increase * n_adapt_rounds
-  #n <- n_train_total + n_holdout + n_test
   xy_train_total = getTaskData(sonar.task)[ind_tr_total, ]
   x_train_total <- as.matrix(dfpair$data[ind_tr_total, ])
-
+  #n_train_total <- n_train + n_train_increase * n_adapt_rounds
+  #n <- n_train_total + n_holdout + n_test
   x_holdout <- as.matrix(dfpair$data[ind_val, ])
   x_test <- as.matrix(dfpair$data[ind_test, ])
 
@@ -112,18 +104,25 @@ fit_models <- function(classifier, n_train, n_train_increase, n_adapt_rounds, n_
 
   #xy_test <- dplyr::slice(xy_full, (n_train_total + n_holdout + 1):(n_train_total + n_holdout + n_test))
   xy_test <- getTaskData(sonar.task)[ind_test, ]
-  #########################################################?
+
+
+  return(list(ind_test = ind_test, ind_val = ind_val))
+}
+
+
+
+
+
+
+
+fit_models = function(tname, bname, classifier, n_train, n_train_increase, n_adapt_rounds, n_holdout, n_test, p, n_signif, signif_level, thresholdout_threshold, thresholdout_sigma, thresholdout_noise_distribution, verbose = FALSE, sanity_checks = TRUE) {
   p_train_total <- 1
   p_holdout <- 1
   p_test <- 1
   #p_train_total <- xy_train_total$p
   #p_holdout <- xy_holdout$p
   #p_test <- xy_test$p
-
-  ##
-
   features_to_keep <- c() # this is updated in every round to store names of the selected features
-
   #--- train the first model without looking at the holdout
   if (verbose) { print("Fitting initial model") }
 
@@ -132,7 +131,7 @@ fit_models <- function(classifier, n_train, n_train_increase, n_adapt_rounds, n_
   y_train <- y_train_total[1:n_train]
 
   # fit only one model: the one with the two most significant features
-  model_fit_results <- fit_model_for_every_subset(tname = tname, classifier = classifier,
+  model_fit_results <- fit_model_for_every_subset(tname = tname, bname = "R", classifier = classifier,
                                                   x_train = x_train, y_train = y_train,
                                                   x_holdout = x_holdout, y_holdout = y_holdout,
                                                   p_holdout = p_holdout, x_test = x_test,
@@ -168,6 +167,7 @@ fit_models <- function(classifier, n_train, n_train_increase, n_adapt_rounds, n_
                                                         gamma = 0, #rlaplace(1, 2*thresholdout_sigma),
                                                         budget_utilized = 0,
                                                         noise_distribution = thresholdout_noise_distribution)
+#                                                        noise_distribution = "norm")
 
   for (round_ind in 1:n_adapt_rounds) {
     if (verbose) { print(paste0("Round: ", round_ind)) }
@@ -177,7 +177,7 @@ fit_models <- function(classifier, n_train, n_train_increase, n_adapt_rounds, n_
     y_train <- y_train_total[1:(n_train + round_ind * n_train_increase)]
 
     # fit models with different numbers of features
-    model_fit_results <- fit_model_for_every_subset(classifier = classifier,
+    model_fit_results <- fit_model_for_every_subset(tname = tname, bname = "R", classifier = classifier,
                                                     x_train = x_train, y_train = y_train,
                                                     x_holdout = x_holdout, y_holdout = y_holdout,
                                                     p_holdout = p_holdout, x_test = x_test,
@@ -237,7 +237,10 @@ fit_models <- function(classifier, n_train, n_train_increase, n_adapt_rounds, n_
 
 #--- a function to run the simulation one time
 run_sim <- function(method, p) {
-  sim_out <- fit_models(classifier = method, n_train = p$n_train,
+  source("../set_params.R")
+  method = "glm"
+  bname = "R"
+  sim_out <- fit_models(tname = tname, bname = bname, classifier = method, n_train = p$n_train,
                         n_train_increase = p$n_train_increase,
                         n_adapt_rounds = p$n_adapt_rounds,
                         n_holdout = p$n_holdout, n_test = p$n_test,
