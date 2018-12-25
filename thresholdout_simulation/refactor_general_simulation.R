@@ -62,7 +62,7 @@ getMlrTask = function() {
   #xy_test <- dplyr::slice(xy_full, (n_train_total + n_holdout + 1):(n_train_total + n_holdout + n_test))
   xy_test <- getTaskData(sonar.task)[ind_test, ]
 
-  return(list(n_train = n_train, x_train_total = x_train_total, y_train_total = y_train_total, ind_test = ind_test, ind_val = ind_val, x_train_total = x_train_total, x_holdout = x_holdout, y_holdout = y_holdout, x_test = x_test, y_test = y_test))
+  return(list(n_train = n_train, x_train_total = x_train_total, y_train_total = y_train_total, ind_test = ind_test, ind_val = ind_val, x_train_total = x_train_total, x_holdout = x_holdout, y_holdout = y_holdout, x_test = x_test, y_test = y_test, n_train_increase = n_train_increase))
 }
 
 
@@ -83,6 +83,8 @@ fit_models = function(tname, bname, classifier, n_train, n_train_increase, n_ada
   y_test = tuple$y_test
   y_holdout = tuple$y_holdout
   n_train = tuple$n_train
+  n_train_increase = tuple$n_train_increase
+  n_adapt_rounds = tuple$n_adapt_rounds
   #p_train_total <- xy_train_total$p
   #p_holdout <- xy_holdout$p
   #p_test <- xy_test$p
@@ -204,18 +206,25 @@ run_sim <- function(method, p) {
   method = "glm"
   bname = "R"
   tname = "Class"
-  p$p = 60
+  conf = list(n_signif = 10                 # number of predictors that have an effect on the response
+  ,p = 60
+  ,signif_level = 0.01           # cutoff level used to determine which predictors to consider in each round based on their p-values
+  ,thresholdout_threshold = 0.02 # T in the Thresholdout algorithm
+  ,thresholdout_sigma = 0.03     # sigma in the Thresholdout algorithm
+  ,thresholdout_noise_distribution = "norm" # choose between "norm" and "laplace"
+  ,verbose = TRUE
+  ,sanity_checks = FALSE
+  )
   sim_out <- fit_models(tname = tname, bname = bname, classifier = method, n_train = p$n_train,
-                        n_train_increase = p$n_train_increase,
                         n_adapt_rounds = p$n_adapt_rounds,
                         n_holdout = p$n_holdout, n_test = p$n_test,
-                        p = p$p, n_signif = p$n_signif,
-                        signif_level = p$signif_level,
-                        thresholdout_threshold = p$thresholdout_threshold,
-                        thresholdout_sigma = p$thresholdout_sigma,
-                        thresholdout_noise_distribution = p$thresholdout_noise_distribution,
-                        verbose = p$verbose,
-                        sanity_checks = p$sanity_checks)
+                        p = conf$p, n_signif = conf$n_signif,
+                        signif_level = conf$signif_level,
+                        thresholdout_threshold = conf$thresholdout_threshold,
+                        thresholdout_sigma = conf$thresholdout_sigma,
+                        thresholdout_noise_distribution = conf$thresholdout_noise_distribution,
+                        verbose = conf$verbose,
+                        sanity_checks = conf$sanity_checks)
   results <- mutate(sim_out$auc_by_round_df, method = method)
   num_features_df <- data_frame(round = 0:p$n_adapt_rounds,
                                 num_features = sim_out$num_features_by_round)
