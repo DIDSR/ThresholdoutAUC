@@ -170,7 +170,6 @@ fit_model_for_every_subset <- function(tname, bname, classifier, x_train, y_trai
       }
     }
   }
-
   # sanity checks
   if (sanity_checks) {
     if (length(fitted_models) != nrow(auc)) {

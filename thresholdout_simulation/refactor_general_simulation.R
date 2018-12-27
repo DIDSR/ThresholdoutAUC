@@ -62,7 +62,7 @@ getMlrTask = function() {
   #xy_test <- dplyr::slice(xy_full, (n_train_total + n_holdout + 1):(n_train_total + n_holdout + n_test))
   xy_test <- getTaskData(sonar.task)[ind_test, ]
 
-  return(list(n_train = n_train, x_train_total = x_train_total, y_train_total = y_train_total, ind_test = ind_test, ind_val = ind_val, x_train_total = x_train_total, x_holdout = x_holdout, y_holdout = y_holdout, x_test = x_test, y_test = y_test, n_train_increase = n_train_increase))
+  return(list(n_train = n_train, x_train_total = x_train_total, y_train_total = y_train_total, ind_test = ind_test, ind_val = ind_val, x_train_total = x_train_total, x_holdout = x_holdout, y_holdout = y_holdout, x_test = x_test, y_test = y_test, n_train_increase = n_train_increase, n_holdout = n_holdout, n_adapt_rounds = n_adapt_rounds))
 }
 
 
@@ -70,11 +70,8 @@ getMlrTask = function() {
 #--- A function that successively fits classifiers of specified type on variables selected via
 # 2-sample t-tests. Each model is fit with an increased number of cases,
 # while retaining all variables selected in the previous model.
-fit_models = function(tname, bname, classifier, n_train, n_train_increase, n_adapt_rounds, n_holdout, n_test, p, n_signif, signif_level, thresholdout_threshold, thresholdout_sigma, thresholdout_noise_distribution, verbose = FALSE, sanity_checks = TRUE) {
-  tuple = getMlrTask()
-  p_train_total <- 1
-  p_holdout <- 1
-  p_test <- 1
+fit_models = function(fun = getMlrTask, tname, bname, classifier, p, n_signif, signif_level, thresholdout_threshold, thresholdout_sigma, thresholdout_noise_distribution, verbose = FALSE, sanity_checks = TRUE) {
+  tuple = fun()
   x_train_total = tuple$x_train_total
   ind_test = tuple$ind_test
   y_train_total = tuple$y_train_total
@@ -88,6 +85,10 @@ fit_models = function(tname, bname, classifier, n_train, n_train_increase, n_ada
   #p_train_total <- xy_train_total$p
   #p_holdout <- xy_holdout$p
   #p_test <- xy_test$p
+  p_train_total <- 1
+  p_holdout <- 1
+  p_test <- 1
+
   features_to_keep <- c() # this is updated in every round to store names of the selected features
   #--- train the first model without looking at the holdout
   if (verbose) { print("Fitting initial model") }
@@ -194,15 +195,11 @@ fit_models = function(tname, bname, classifier, n_train, n_train_increase, n_ada
               auc_by_round_df = auc_by_round_df,
               holdout_access_by_round = holdout_access_by_round,
               cum_holdout_access = cumsum(holdout_access_by_round),
-              cum_budget_decrease_by_round = cum_budget_decrease_by_round,
-              pos_prop_train = pos_prop_train,
-              pos_prop_holdout = pos_prop_holdout,
-              pos_prop_test = pos_prop_test))
+              cum_budget_decrease_by_round = cum_budget_decrease_by_round))
 }
 
 #--- a function to run the simulation one time
 run_sim <- function(method, p) {
-  source("../set_params.R")
   method = "glm"
   bname = "R"
   tname = "Class"
@@ -215,9 +212,7 @@ run_sim <- function(method, p) {
   ,verbose = TRUE
   ,sanity_checks = FALSE
   )
-  sim_out <- fit_models(tname = tname, bname = bname, classifier = method, n_train = p$n_train,
-                        n_adapt_rounds = p$n_adapt_rounds,
-                        n_holdout = p$n_holdout, n_test = p$n_test,
+  sim_out <- fit_models(tname = tname, bname = bname, classifier = method,
                         p = conf$p, n_signif = conf$n_signif,
                         signif_level = conf$signif_level,
                         thresholdout_threshold = conf$thresholdout_threshold,
