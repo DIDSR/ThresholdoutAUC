@@ -25,7 +25,6 @@ getMlrTask = function() {
   n_all = 208
   n_train = 50  ## begin
   n_train_increase = 5
-  n_adapt_rounds = 10
   n_train_total = 100
   n_holdout = 80
   n_test = 28
@@ -62,7 +61,7 @@ getMlrTask = function() {
   #xy_test <- dplyr::slice(xy_full, (n_train_total + n_holdout + 1):(n_train_total + n_holdout + n_test))
   xy_test <- getTaskData(sonar.task)[ind_test, ]
 
-  return(list(n_train = n_train, x_train_total = x_train_total, y_train_total = y_train_total, ind_test = ind_test, ind_val = ind_val, x_train_total = x_train_total, x_holdout = x_holdout, y_holdout = y_holdout, x_test = x_test, y_test = y_test, n_train_increase = n_train_increase, n_holdout = n_holdout, n_adapt_rounds = n_adapt_rounds))
+  return(list(n_train = n_train, x_train_total = x_train_total, y_train_total = y_train_total, ind_test = ind_test, ind_val = ind_val, x_train_total = x_train_total, x_holdout = x_holdout, y_holdout = y_holdout, x_test = x_test, y_test = y_test, n_train_increase = n_train_increase, n_holdout = n_holdout))
 }
 
 
@@ -70,7 +69,7 @@ getMlrTask = function() {
 #--- A function that successively fits classifiers of specified type on variables selected via
 # 2-sample t-tests. Each model is fit with an increased number of cases,
 # while retaining all variables selected in the previous model.
-fit_models = function(fun = getMlrTask, tname, bname, classifier, p, n_signif, signif_level, thresholdout_threshold, thresholdout_sigma, thresholdout_noise_distribution, verbose = FALSE, sanity_checks = TRUE) {
+fit_models = function(fun = getMlrTask, tname, bname, classifier, p, n_adapt_rounds, n_signif, signif_level, thresholdout_threshold, thresholdout_sigma, thresholdout_noise_distribution, verbose = FALSE, sanity_checks = TRUE) {
   tuple = fun()
   x_train_total = tuple$x_train_total
   ind_test = tuple$ind_test
@@ -81,7 +80,6 @@ fit_models = function(fun = getMlrTask, tname, bname, classifier, p, n_signif, s
   y_holdout = tuple$y_holdout
   n_train = tuple$n_train
   n_train_increase = tuple$n_train_increase
-  n_adapt_rounds = tuple$n_adapt_rounds
   #p_train_total <- xy_train_total$p
   #p_holdout <- xy_holdout$p
   #p_test <- xy_test$p
@@ -205,6 +203,7 @@ run_sim <- function(method, p) {
   tname = "Class"
   conf = list(n_signif = 10                 # number of predictors that have an effect on the response
   ,p = 60
+  , n_adapt_rounds = 10
   ,signif_level = 0.01           # cutoff level used to determine which predictors to consider in each round based on their p-values
   ,thresholdout_threshold = 0.02 # T in the Thresholdout algorithm
   ,thresholdout_sigma = 0.03     # sigma in the Thresholdout algorithm
@@ -213,7 +212,7 @@ run_sim <- function(method, p) {
   ,sanity_checks = FALSE
   )
   sim_out <- fit_models(tname = tname, bname = bname, classifier = method,
-                        p = conf$p, n_signif = conf$n_signif,
+                        p = conf$p, n_adapt_rounds = conf$n_adapt_rounds, n_signif = conf$n_signif,
                         signif_level = conf$signif_level,
                         thresholdout_threshold = conf$thresholdout_threshold,
                         thresholdout_sigma = conf$thresholdout_sigma,
@@ -221,10 +220,15 @@ run_sim <- function(method, p) {
                         verbose = conf$verbose,
                         sanity_checks = conf$sanity_checks)
   results <- mutate(sim_out$auc_by_round_df, method = method)
-  num_features_df <- data_frame(round = 0:p$n_adapt_rounds,
+
+
+
+  num_features_df <- data_frame(round = 0:conf$n_adapt_rounds,
                                 num_features = sim_out$num_features_by_round)
+
   results <- left_join(results, num_features_df, by = "round")
-  holdout_access_count_df <- data_frame(round = 0:p$n_adapt_rounds,
+
+  holdout_access_count_df <- data_frame(round = 0:conf$n_adapt_rounds,
                                         holdout_access_count = sim_out$holdout_access_by_round,
                                         cum_holdout_access_count = sim_out$cum_holdout_access,
                                         cum_budget_decrease_by_round = sim_out$cum_budget_decrease_by_round)
