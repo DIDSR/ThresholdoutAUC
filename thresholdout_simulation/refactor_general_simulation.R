@@ -233,10 +233,10 @@ run_sim <- function(method, p) {
                                         cum_holdout_access_count = sim_out$cum_holdout_access,
                                         cum_budget_decrease_by_round = sim_out$cum_budget_decrease_by_round)
   results <- left_join(results, holdout_access_count_df, by = "round")
-  results <- results %>%
-    mutate(pos_prop_train = sim_out$pos_prop_train,
-           pos_prop_holdout = sim_out$pos_prop_holdout,
-           pos_prop_test = sim_out$pos_prop_test)
+#  results <- results %>%
+#    mutate(pos_prop_train = sim_out$pos_prop_train,
+#           pos_prop_holdout = sim_out$pos_prop_holdout,
+#           pos_prop_test = sim_out$pos_prop_test)
 
   return(results)
 }
