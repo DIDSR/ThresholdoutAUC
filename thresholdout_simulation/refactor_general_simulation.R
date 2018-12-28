@@ -19,7 +19,7 @@ source("../functions/thresholdout_auc.R")
 #--- A function that successively fits classifiers of specified type on variables selected via
 # 2-sample t-tests. Each model is fit with an increased number of cases,
 # while retaining all variables selected in the previous model.
-fit_models = function(fun, classifier, n_adapt_rounds, n_signif, signif_level, thresholdout_threshold, thresholdout_sigma, thresholdout_noise_distribution, verbose = FALSE, sanity_checks = TRUE) {
+fit_models = function(fun, classifier, n_adapt_rounds, signif_level, thresholdout_threshold, thresholdout_sigma, thresholdout_noise_distribution, verbose = FALSE, sanity_checks = TRUE) {
   tuple = fun()
   tname = tuple$tname
   bname = tuple$bname
@@ -213,8 +213,7 @@ getMlrTask = function() {
 #--- a function to run the simulation one time
 run_sim <- function(method, p) {
   method = "glm"
-  conf = list(n_signif = 10                 # number of predictors that have an effect on the response
-  , n_adapt_rounds = 10
+  conf = list(n_adapt_rounds = 10
   ,signif_level = 0.001           # cutoff level used to determine which predictors to consider in each round based on their p-values. set small here for bigger parsimosmally for quick convergence
   ,thresholdout_threshold = 0.02 # T in the Thresholdout algorithm
   ,thresholdout_sigma = 0.03     # sigma in the Thresholdout algorithm
@@ -222,8 +221,7 @@ run_sim <- function(method, p) {
   ,verbose = TRUE
   ,sanity_checks = FALSE
   )
-  sim_out <- fit_models(fun = getMlrTask, classifier = method, n_adapt_rounds = conf$n_adapt_rounds, n_signif = conf$n_signif,
-                        signif_level = conf$signif_level,
+  sim_out <- fit_models(fun = getMlrTask, classifier = method, n_adapt_rounds = conf$n_adapt_rounds, signif_level = conf$signif_level,
                         thresholdout_threshold = conf$thresholdout_threshold,
                         thresholdout_sigma = conf$thresholdout_sigma,
                         thresholdout_noise_distribution = conf$thresholdout_noise_distribution,
