@@ -159,17 +159,14 @@ fit_models = function(fun, classifier, n_adapt_rounds, signif_level, thresholdou
 
 
 
-getMlrTask = function() {
-  require(mlr)
-  require(dplyr)
-  task = sonar.task
+getMlrTask = function(task = sonar.task) {
   tname = mlr::getTaskTargetNames(task)
-  bname = getTaskDesc(task)$negative
-  p = getTaskNFeats(task)
-  n_all = getTaskSize(task)
+  bname = mlr::getTaskDesc(task)$negative
+  p = mlr::getTaskNFeats(task)
+  n_all = mlr::getTaskSize(task)
 
   n_train_total = 0.5 * n_all
-  n_train = 0.5*n_train_total  ## begin
+  n_train = 0.5 * n_train_total  ## begin
   n_holdout = 0.25 * n_all
   n_test = 0.25 * n_all
 
@@ -179,15 +176,11 @@ getMlrTask = function() {
   ind_tr_total = ind_all[1:n_train_total]
   ind_val = ind_all[((n_train_total + 1) : (n_train_total + n_holdout))]
   ind_test = ind_all[((n_train_total + n_holdout + 1L) : (n_all))]
-  sonar.task
-  dfpair = getTaskData(sonar.task, target.extra = T)
-  names(dfpair)
-# matrices
-  classifier = "glm"
-  xy_train_total = getTaskData(sonar.task)[ind_tr_total, ]
+
+  dfpair = mlr::getTaskData(task, target.extra = T)
+
+  xy_train_total = mlr::getTaskData(task)[ind_tr_total, ]
   x_train_total <- as.matrix(dfpair$data[ind_tr_total, ])
-  #n_train_total <- n_train + n_train_increase * n_adapt_rounds
-  #n <- n_train_total + n_holdout + n_test
   x_holdout <- as.matrix(dfpair$data[ind_val, ])
   x_test <- as.matrix(dfpair$data[ind_test, ])
 
@@ -198,10 +191,10 @@ getMlrTask = function() {
 
   ##
   #xy_holdout <- dplyr::slice(xy_full, (n_train_total+1):(n_train_total + n_holdout))
-  xy_holdout = getTaskData(sonar.task)[ind_val, ]
+  xy_holdout = mlr::getTaskData(task)[ind_val, ]
 
   #xy_test <- dplyr::slice(xy_full, (n_train_total + n_holdout + 1):(n_train_total + n_holdout + n_test))
-  xy_test <- getTaskData(sonar.task)[ind_test, ]
+  xy_test <- mlr::getTaskData(task)[ind_test, ]
 
   return(list(n_train_total = n_train_total, n_train = n_train, x_train_total = x_train_total, y_train_total = y_train_total, ind_test = ind_test, ind_val = ind_val, x_train_total = x_train_total, x_holdout = x_holdout, y_holdout = y_holdout, x_test = x_test, y_test = y_test, n_holdout = n_holdout, tname = tname, bname = bname, p = p))
 }
