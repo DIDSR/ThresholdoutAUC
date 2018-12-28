@@ -10,14 +10,8 @@ library(tictoc)
 
 # functions to calculate p-values
 source("../functions/p-values.R")
-# functions to generate datasets
-source("../functions/data_generation.R")
 # a function to fit classification models for every subset of the most significant predictors
 source("../functions/refactor_fit_model_for_every_subset.R")
-# set simulation parameters (such as number of cases, number of features, etc.)
-source("../set_params.R")
-# functions to run the main simulation one time for a specified method
-source("general_simulation.R")
 # thresholdout algorithm
 source("../functions/thresholdout_auc.R")
 
@@ -38,7 +32,8 @@ fit_models = function(fun, classifier, n_adapt_rounds, n_signif, signif_level, t
   y_test = tuple$y_test
   y_holdout = tuple$y_holdout
   n_train = tuple$n_train
-  n_train_increase = tuple$n_train_increase
+  n_train_total = tuple$n_train_total
+  n_train_increase = (n_train_total - n_train) / n_adapt_rounds
   #p_train_total <- xy_train_total$p
   #p_holdout <- xy_holdout$p
   #p_test <- xy_test$p
@@ -48,13 +43,15 @@ fit_models = function(fun, classifier, n_adapt_rounds, n_signif, signif_level, t
 
   features_to_keep <- c() # this is updated in every round to store names of the selected features
   #--- train the first model without looking at the holdout
-  if (verbose) { print("Fitting initial model") }
+  if (verbose) {
+    print("Fitting initial model")
+  }
   # define train data for this iteration
   x_train <- x_train_total[1:n_train, ]
   y_train <- y_train_total[1:n_train]
 
   # fit only one model: the one with the two most significant features
-  model_fit_results <- fit_model_for_every_subset(tname = tname, bname = "R", classifier = classifier,
+  model_fit_results <- fit_model_for_every_subset(tname = tname, bname = bname, classifier = classifier,
                                                   x_train = x_train, y_train = y_train,
                                                   x_holdout = x_holdout, y_holdout = y_holdout,
                                                   p_holdout = p_holdout, x_test = x_test,
@@ -63,7 +60,9 @@ fit_models = function(fun, classifier, n_adapt_rounds, n_signif, signif_level, t
                                                   signif_level = 0, # (this forces the function to consider 2 most significant features only)
                                                   verbose = F, sanity_checks = T)
 
-  if (length(model_fit_results$fitted_models) > 1) { stop("Something went wrong when fitting initial model!") }
+  if (length(model_fit_results$fitted_models) > 1) {
+    stop("Something went wrong when fitting initial model!")
+  }
 
   auc <- model_fit_results$auc
   fitted_models <- model_fit_results$fitted_models
@@ -93,14 +92,16 @@ fit_models = function(fun, classifier, n_adapt_rounds, n_signif, signif_level, t
 #                                                        noise_distribution = "norm")
 
   for (round_ind in 1:n_adapt_rounds) {
-    if (verbose) { print(paste0("Round: ", round_ind)) }
+    if (verbose) {
+      print(paste0("Round: ", round_ind))
+    }
 
     # define train data for this iteration
     x_train <- x_train_total[1:(n_train + round_ind * n_train_increase), ]
     y_train <- y_train_total[1:(n_train + round_ind * n_train_increase)]
 
     # fit models with different numbers of features
-    model_fit_results <- fit_model_for_every_subset(tname = tname, bname = "R", classifier = classifier,
+    model_fit_results <- fit_model_for_every_subset(tname = tname, bname = bname, classifier = classifier,
                                                     x_train = x_train, y_train = y_train,
                                                     x_holdout = x_holdout, y_holdout = y_holdout,
                                                     p_holdout = p_holdout, x_test = x_test,
@@ -138,7 +139,7 @@ fit_models = function(fun, classifier, n_adapt_rounds, n_signif, signif_level, t
     thresholdout_params <- temp$params
     features_to_keep <- union(features_to_keep, selected_features[[best_model_ind]])
     num_features_by_round <- c(num_features_by_round, length(features_to_keep))
-    holdout_access_by_round <- c(holdout_access_by_round, nrow(auc)+1)
+    holdout_access_by_round <- c(holdout_access_by_round, nrow(auc) + 1)
     cum_budget_decrease_by_round <- c(cum_budget_decrease_by_round,
                                       thresholdout_params$budget_utilized)
     auc_by_round_df <- bind_rows(auc_by_round_df,
@@ -159,28 +160,29 @@ fit_models = function(fun, classifier, n_adapt_rounds, n_signif, signif_level, t
 
 
 getMlrTask = function() {
-  bname = "R"
-  tname = "Class"
-  p = 60
-  n_all = 208
-  n_train = 50  ## begin
-  n_train_increase = 5
-  n_train_total = 100
-  n_holdout = 80
-  n_test = 28
+  require(mlr)
+  require(dplyr)
+  task = sonar.task
+  tname = mlr::getTaskTargetNames(task)
+  bname = getTaskDesc(task)$negative
+  p = getTaskNFeats(task)
+  n_all = getTaskSize(task)
+
+  n_train_total = 0.5 * n_all
+  n_train = 0.5*n_train_total  ## begin
+  n_holdout = 0.25 * n_all
+  n_test = 0.25 * n_all
+
+
   ind_all = sample(n_all)
   ind_tr_begin = ind_all[1:n_train]
   ind_tr_total = ind_all[1:n_train_total]
   ind_val = ind_all[((n_train_total + 1) : (n_train_total + n_holdout))]
   ind_test = ind_all[((n_train_total + n_holdout + 1L) : (n_all))]
-  require(mlr)
-  require(dplyr)
   sonar.task
   dfpair = getTaskData(sonar.task, target.extra = T)
   names(dfpair)
-  tname = mlr::getTaskTargetNames(sonar.task)
 # matrices
-  p = getTaskNFeats(sonar.task)
   classifier = "glm"
   xy_train_total = getTaskData(sonar.task)[ind_tr_total, ]
   x_train_total <- as.matrix(dfpair$data[ind_tr_total, ])
@@ -201,7 +203,7 @@ getMlrTask = function() {
   #xy_test <- dplyr::slice(xy_full, (n_train_total + n_holdout + 1):(n_train_total + n_holdout + n_test))
   xy_test <- getTaskData(sonar.task)[ind_test, ]
 
-  return(list(n_train = n_train, x_train_total = x_train_total, y_train_total = y_train_total, ind_test = ind_test, ind_val = ind_val, x_train_total = x_train_total, x_holdout = x_holdout, y_holdout = y_holdout, x_test = x_test, y_test = y_test, n_train_increase = n_train_increase, n_holdout = n_holdout, tname = tname, bname = bname, p = p))
+  return(list(n_train_total = n_train_total, n_train = n_train, x_train_total = x_train_total, y_train_total = y_train_total, ind_test = ind_test, ind_val = ind_val, x_train_total = x_train_total, x_holdout = x_holdout, y_holdout = y_holdout, x_test = x_test, y_test = y_test, n_holdout = n_holdout, tname = tname, bname = bname, p = p))
 }
 
 
