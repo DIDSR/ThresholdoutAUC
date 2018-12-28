@@ -139,8 +139,8 @@ fit_model_for_every_subset <- function(tname, bname, classifier, x_train, y_trai
     # all_subsets is a list
     for (n_vars in 1:length(all_subsets)) {
       subsets <- all_subsets[[n_vars]]  # matrix
+      print(subsets)
       for (i in 1:ncol(subsets)) {
-
         new_features <- subsets[, i]
         features <- union(features_to_keep, new_features)
         x_sub <- as.matrix(x_train[, features])
