@@ -215,7 +215,7 @@ run_sim <- function(method, p) {
   method = "glm"
   conf = list(n_signif = 10                 # number of predictors that have an effect on the response
   , n_adapt_rounds = 10
-  ,signif_level = 0.01           # cutoff level used to determine which predictors to consider in each round based on their p-values
+  ,signif_level = 0.00           # cutoff level used to determine which predictors to consider in each round based on their p-values. set 0 here for bigger parsimony
   ,thresholdout_threshold = 0.02 # T in the Thresholdout algorithm
   ,thresholdout_sigma = 0.03     # sigma in the Thresholdout algorithm
   ,thresholdout_noise_distribution = "norm" # choose between "norm" and "laplace"

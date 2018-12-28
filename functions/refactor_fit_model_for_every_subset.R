@@ -101,16 +101,14 @@ fit_model_for_every_subset <- function(tname, bname, classifier, x_train, y_trai
   selected_features <- list()
   auc <- NULL
 
-
-  if (length(new_signif_vars) == 0) { # i.e., no new features were selected
+  if (length(new_signif_vars) == 0) {
+    # i.e., no new features were selected
     # in this case just fit a single model with the features in features_to_keep
-    if (verbose) { print("No new features identified!") }
-    x_sub <- as.matrix(x_train[ , features_to_keep])
+    if (verbose) {
+      print("No new features identified!")
+    }
+    x_sub <- as.matrix(x_train[, features_to_keep])
     train_df <- as.data.frame(x_sub)
-    # turn y into a factor b/c caret does not considered 0-1-valued
-    # response variables categorical
-    #train_df$y <- factor(letters[y_train+1])
-    
     train_df[tname] <- y_train
     single_model <- caret::train(as.formula(paste(tname, " ~ .")), data = train_df,
                           method = classifier,
@@ -118,13 +116,9 @@ fit_model_for_every_subset <- function(tname, bname, classifier, x_train, y_trai
                           metric = "ROC")
     fitted_models[[1]] <- single_model
     selected_features[[1]] <- features_to_keep
-    auc <- get_auc(tname = tname, bname = bname, fitted_model = single_model, features = features_to_keep,
-                   x_train = x_train, y_train = y_train,
-                   x_holdout = x_holdout, y_holdout = y_holdout,
-                   p_holdout = p_holdout, x_test = x_test, y_test = y_test)
-
-  } else { # consider all subsets of new features
-
+    auc <- get_auc(tname = tname, bname = bname, fitted_model = single_model, features = features_to_keep, x_train = x_train, y_train = y_train, x_holdout = x_holdout, y_holdout = y_holdout, p_holdout = p_holdout, x_test = x_test, y_test = y_test)
+  } else {
+    # consider all subsets of new features
     if (length(features_to_keep) == 0) {
       # using subsets of size at least 2 in this case, because for example
       # glmnet requires at least two predictors
@@ -142,14 +136,14 @@ fit_model_for_every_subset <- function(tname, bname, classifier, x_train, y_trai
       all_subsets <- lapply(0:length(new_signif_vars),
                             function(x) combn(new_signif_vars, x))
     }
-
+    # all_subsets is a list
     for (n_vars in 1:length(all_subsets)) {
-      subsets <- all_subsets[[n_vars]]
+      subsets <- all_subsets[[n_vars]]  # matrix
       for (i in 1:ncol(subsets)) {
 
-        new_features <- subsets[ , i]
+        new_features <- subsets[, i]
         features <- union(features_to_keep, new_features)
-        x_sub <- as.matrix(x_train[ , features])
+        x_sub <- as.matrix(x_train[, features])
 
         train_df <- as.data.frame(x_sub)
         #train_df$y <- factor(letters[y_train+1])
@@ -158,8 +152,8 @@ fit_model_for_every_subset <- function(tname, bname, classifier, x_train, y_trai
                                 method = classifier,
                                 trControl = fitControl,
                                 metric = "ROC")
-        fitted_models[[ length(fitted_models) + 1 ]] <- fitted_model_i
-        selected_features[[ length(selected_features) + 1 ]] <- features
+        fitted_models[[ length(fitted_models) + 1]] <- fitted_model_i
+        selected_features[[ length(selected_features) + 1]] <- features
         auc_i <- get_auc(tname = tname, bname = bname, fitted_model = fitted_model_i, features = features,
                          x_train = x_train, y_train = y_train,
                          x_holdout = x_holdout, y_holdout = y_holdout,
@@ -173,6 +167,7 @@ fit_model_for_every_subset <- function(tname, bname, classifier, x_train, y_trai
       }
     }
   }
+  print("begining sanity check")
   # sanity checks
   if (sanity_checks) {
     if (length(fitted_models) != nrow(auc)) {
