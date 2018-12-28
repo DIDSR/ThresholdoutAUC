@@ -21,56 +21,15 @@ source("general_simulation.R")
 # thresholdout algorithm
 source("../functions/thresholdout_auc.R")
 
-getMlrTask = function() {
-  n_all = 208
-  n_train = 50  ## begin
-  n_train_increase = 5
-  n_train_total = 100
-  n_holdout = 80
-  n_test = 28
-  ind_all = sample(n_all)
-  ind_tr_begin = ind_all[1:n_train]
-  ind_tr_total = ind_all[1:n_train_total]
-  ind_val = ind_all[((n_train_total + 1) : (n_train_total + n_holdout))]
-  ind_test = ind_all[((n_train_total + n_holdout + 1L) : (n_all))]
-  require(mlr)
-  require(dplyr)
-  sonar.task
-  dfpair = getTaskData(sonar.task, target.extra = T)
-  names(dfpair)
-  tname = mlr::getTaskTargetNames(sonar.task)
-# matrices
-  p = getTaskNFeats(sonar.task)
-  classifier = "glm"
-  xy_train_total = getTaskData(sonar.task)[ind_tr_total, ]
-  x_train_total <- as.matrix(dfpair$data[ind_tr_total, ])
-  #n_train_total <- n_train + n_train_increase * n_adapt_rounds
-  #n <- n_train_total + n_holdout + n_test
-  x_holdout <- as.matrix(dfpair$data[ind_val, ])
-  x_test <- as.matrix(dfpair$data[ind_test, ])
-
-  # vectors
-  y_train_total <- xy_train_total[, tname]
-  y_holdout <- dfpair$target[ind_val]
-  y_test <- dfpair$target[ind_test]
-
-  ##
-  #xy_holdout <- dplyr::slice(xy_full, (n_train_total+1):(n_train_total + n_holdout))
-  xy_holdout = getTaskData(sonar.task)[ind_val, ]
-
-  #xy_test <- dplyr::slice(xy_full, (n_train_total + n_holdout + 1):(n_train_total + n_holdout + n_test))
-  xy_test <- getTaskData(sonar.task)[ind_test, ]
-
-  return(list(n_train = n_train, x_train_total = x_train_total, y_train_total = y_train_total, ind_test = ind_test, ind_val = ind_val, x_train_total = x_train_total, x_holdout = x_holdout, y_holdout = y_holdout, x_test = x_test, y_test = y_test, n_train_increase = n_train_increase, n_holdout = n_holdout))
-}
-
-
 
 #--- A function that successively fits classifiers of specified type on variables selected via
 # 2-sample t-tests. Each model is fit with an increased number of cases,
 # while retaining all variables selected in the previous model.
-fit_models = function(fun = getMlrTask, tname, bname, classifier, p, n_adapt_rounds, n_signif, signif_level, thresholdout_threshold, thresholdout_sigma, thresholdout_noise_distribution, verbose = FALSE, sanity_checks = TRUE) {
+fit_models = function(fun, classifier, n_adapt_rounds, n_signif, signif_level, thresholdout_threshold, thresholdout_sigma, thresholdout_noise_distribution, verbose = FALSE, sanity_checks = TRUE) {
   tuple = fun()
+  tname = tuple$tname
+  bname = tuple$bname
+  p = tuple$p
   x_train_total = tuple$x_train_total
   ind_test = tuple$ind_test
   y_train_total = tuple$y_train_total
@@ -196,13 +155,63 @@ fit_models = function(fun = getMlrTask, tname, bname, classifier, p, n_adapt_rou
               cum_budget_decrease_by_round = cum_budget_decrease_by_round))
 }
 
+
+
+
+getMlrTask = function() {
+  bname = "R"
+  tname = "Class"
+  p = 60
+  n_all = 208
+  n_train = 50  ## begin
+  n_train_increase = 5
+  n_train_total = 100
+  n_holdout = 80
+  n_test = 28
+  ind_all = sample(n_all)
+  ind_tr_begin = ind_all[1:n_train]
+  ind_tr_total = ind_all[1:n_train_total]
+  ind_val = ind_all[((n_train_total + 1) : (n_train_total + n_holdout))]
+  ind_test = ind_all[((n_train_total + n_holdout + 1L) : (n_all))]
+  require(mlr)
+  require(dplyr)
+  sonar.task
+  dfpair = getTaskData(sonar.task, target.extra = T)
+  names(dfpair)
+  tname = mlr::getTaskTargetNames(sonar.task)
+# matrices
+  p = getTaskNFeats(sonar.task)
+  classifier = "glm"
+  xy_train_total = getTaskData(sonar.task)[ind_tr_total, ]
+  x_train_total <- as.matrix(dfpair$data[ind_tr_total, ])
+  #n_train_total <- n_train + n_train_increase * n_adapt_rounds
+  #n <- n_train_total + n_holdout + n_test
+  x_holdout <- as.matrix(dfpair$data[ind_val, ])
+  x_test <- as.matrix(dfpair$data[ind_test, ])
+
+  # vectors
+  y_train_total <- xy_train_total[, tname]
+  y_holdout <- dfpair$target[ind_val]
+  y_test <- dfpair$target[ind_test]
+
+  ##
+  #xy_holdout <- dplyr::slice(xy_full, (n_train_total+1):(n_train_total + n_holdout))
+  xy_holdout = getTaskData(sonar.task)[ind_val, ]
+
+  #xy_test <- dplyr::slice(xy_full, (n_train_total + n_holdout + 1):(n_train_total + n_holdout + n_test))
+  xy_test <- getTaskData(sonar.task)[ind_test, ]
+
+  return(list(n_train = n_train, x_train_total = x_train_total, y_train_total = y_train_total, ind_test = ind_test, ind_val = ind_val, x_train_total = x_train_total, x_holdout = x_holdout, y_holdout = y_holdout, x_test = x_test, y_test = y_test, n_train_increase = n_train_increase, n_holdout = n_holdout, tname = tname, bname = bname, p = p))
+}
+
+
+
+
+
 #--- a function to run the simulation one time
 run_sim <- function(method, p) {
   method = "glm"
-  bname = "R"
-  tname = "Class"
   conf = list(n_signif = 10                 # number of predictors that have an effect on the response
-  ,p = 60
   , n_adapt_rounds = 10
   ,signif_level = 0.01           # cutoff level used to determine which predictors to consider in each round based on their p-values
   ,thresholdout_threshold = 0.02 # T in the Thresholdout algorithm
@@ -211,8 +220,7 @@ run_sim <- function(method, p) {
   ,verbose = TRUE
   ,sanity_checks = FALSE
   )
-  sim_out <- fit_models(tname = tname, bname = bname, classifier = method,
-                        p = conf$p, n_adapt_rounds = conf$n_adapt_rounds, n_signif = conf$n_signif,
+  sim_out <- fit_models(fun = getMlrTask, classifier = method, n_adapt_rounds = conf$n_adapt_rounds, n_signif = conf$n_signif,
                         signif_level = conf$signif_level,
                         thresholdout_threshold = conf$thresholdout_threshold,
                         thresholdout_sigma = conf$thresholdout_sigma,

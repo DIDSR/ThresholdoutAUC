@@ -1,5 +1,8 @@
 # An auxilliary function used in fit_model_for_every_subset below in order to
 # compute AUC from a fitted model on training, holdout, and testing datasets
+# refactor comment:
+# bname is the second factor level in character form of the target
+# refactor is done as less as possible to keep a good comparision with original code
 get_auc <- function(tname, bname, fitted_model, features, x_train, y_train,
                     x_holdout, y_holdout, p_holdout, x_test, y_test) {
   cv_auc <- max(fitted_model$results$ROC)
@@ -14,7 +17,7 @@ get_auc <- function(tname, bname, fitted_model, features, x_train, y_train,
                              classProb = TRUE,
                              summaryFunction = twoClassSummary,
                              allowParallel = FALSE)
-  x_sub <- as.matrix(x_train[ , features])
+  x_sub <- as.matrix(x_train[, features])
   train_df <- as.data.frame(x_sub)
   # turn y into a factor b/c caret does not considered 0-1-valued
   # response variables categorical
@@ -42,7 +45,7 @@ get_auc <- function(tname, bname, fitted_model, features, x_train, y_train,
   # the best possible AUC score that can be achieved on the holdout dataset
  # perfect_pred <- prediction(p_holdout, y_holdout)
  # perfect_auc <- as.numeric(performance(perfect_pred, "auc")@y.values)
-  perfect_pred <- NA
+  perfect_pred <- NA    # for real data, there is no perfect prediction
   perfect_auc <- NA
 
 
