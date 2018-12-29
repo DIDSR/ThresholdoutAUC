@@ -157,7 +157,13 @@ fit_models = function(data_fun, classifier, n_adapt_rounds, signif_level, thresh
 
 
 
-getMlrTask = function(task = mlr::sonar.task) {
+#' @title 
+#' @description
+#' @param task a mlr::task
+#' @return list(n_train = n_train, x_train_total = x_train_total, y_train_total = y_train_total, x_holdout = x_holdout, y_holdout = y_holdout, x_test = x_test, y_test = y_test, tname = tname, bname = bname, p = p)
+#' @examples 
+#' demo_data_fun(mlr::sonar.task)
+demo_data_fun = function(task = mlr::sonar.task) {
   tname = mlr::getTaskTargetNames(task)
   bname = mlr::getTaskDesc(task)$negative
   p = mlr::getTaskNFeats(task)
@@ -194,11 +200,18 @@ getMlrTask = function(task = mlr::sonar.task) {
 
 
 
-#--- a function to run the simulation one time
-run_sim <- function(data_fun = getMlrTask, method = "glm", conf = NULL) {
+#' @title
+#' @description
+#' @param data_fun a function which could return(list(n_train = n_train, x_train_total = x_train_total, y_train_total = y_train_total, x_holdout = x_holdout, y_holdout = y_holdout, x_test = x_test, y_test = y_test, tname = tname, bname = bname, p = p))
+#' @param method a string for caret learner
+#' @param conf a list of configuration for ThresholdoutAUC
+#' @return table of results in ThreasholdoutAUC format
+#' @examples
+#' run_sim()
+run_sim <- function(data_fun = demo_data_fun, method = "glm", conf = NULL) {
   if (is.null(conf)) {
    conf = list(n_adapt_rounds = 10
-  ,signif_level = 0.001           # cutoff level used to determine which predictors to consider in each round based on their p-values. set small here for bigger parsimosmally for quick convergence
+  ,signif_level = 0.0001           # cutoff level used to determine which predictors to consider in each round based on their p-values. set small here for bigger parsimosmally for quick convergence
   ,thresholdout_threshold = 0.02 # T in the Thresholdout algorithm
   ,thresholdout_sigma = 0.03     # sigma in the Thresholdout algorithm
   ,thresholdout_noise_distribution = "norm" # choose between "norm" and "laplace"
@@ -207,6 +220,8 @@ run_sim <- function(data_fun = getMlrTask, method = "glm", conf = NULL) {
   )}
 
   sim_out <- fit_models(data_fun = data_fun, classifier = method, n_adapt_rounds = conf$n_adapt_rounds, signif_level = conf$signif_level, thresholdout_threshold = conf$thresholdout_threshold, thresholdout_sigma = conf$thresholdout_sigma, thresholdout_noise_distribution = conf$thresholdout_noise_distribution, verbose = conf$verbose, sanity_checks = conf$sanity_checks)
+
+
   results <- mutate(sim_out$auc_by_round_df, method = method)
 
   num_features_df <- data_frame(round = 0:conf$n_adapt_rounds,
@@ -219,10 +234,5 @@ run_sim <- function(data_fun = getMlrTask, method = "glm", conf = NULL) {
                                         cum_holdout_access_count = sim_out$cum_holdout_access,
                                         cum_budget_decrease_by_round = sim_out$cum_budget_decrease_by_round)
   results <- left_join(results, holdout_access_count_df, by = "round")
-#  results <- results %>%
-#    mutate(pos_prop_train = sim_out$pos_prop_train,
-#           pos_prop_holdout = sim_out$pos_prop_holdout,
-#           pos_prop_test = sim_out$pos_prop_test)
-
   return(results)
 }
