@@ -25,18 +25,16 @@ fit_models = function(fun, classifier, n_adapt_rounds, signif_level, thresholdou
   bname = tuple$bname
   p = tuple$p
   x_train_total = tuple$x_train_total
-  ind_test = tuple$ind_test
   y_train_total = tuple$y_train_total
   x_holdout = tuple$x_holdout
   x_test = tuple$x_test
   y_test = tuple$y_test
   y_holdout = tuple$y_holdout
   n_train = tuple$n_train
-  n_train_total = tuple$n_train_total
+  n_train_total = nrow(x_train_total)
   n_train_increase = (n_train_total - n_train) / n_adapt_rounds
-  #p_train_total <- xy_train_total$p
-  #p_holdout <- xy_holdout$p
-  #p_test <- xy_test$p
+
+  # there is no p for real data, so we hack them here to be 1
   p_train_total <- 1
   p_holdout <- 1
   p_test <- 1
@@ -196,7 +194,7 @@ getMlrTask = function(task = sonar.task) {
   #xy_test <- dplyr::slice(xy_full, (n_train_total + n_holdout + 1):(n_train_total + n_holdout + n_test))
   xy_test <- mlr::getTaskData(task)[ind_test, ]
 
-  return(list(n_train_total = n_train_total, n_train = n_train, x_train_total = x_train_total, y_train_total = y_train_total, ind_test = ind_test, ind_val = ind_val, x_train_total = x_train_total, x_holdout = x_holdout, y_holdout = y_holdout, x_test = x_test, y_test = y_test, n_holdout = n_holdout, tname = tname, bname = bname, p = p))
+  return(list(n_train = n_train, x_train_total = x_train_total, y_train_total = y_train_total, x_holdout = x_holdout, y_holdout = y_holdout, x_test = x_test, y_test = y_test, tname = tname, bname = bname, p = p))
 }
 
 
