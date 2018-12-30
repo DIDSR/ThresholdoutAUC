@@ -19,8 +19,7 @@ source("functions/thresholdout_auc.R")
 #--- A function that successively fits classifiers of specified type on variables selected via
 # 2-sample t-tests. Each model is fit with an increased number of cases,
 # while retaining all variables selected in the previous model.
-fit_models = function(data_fun, classifier, n_adapt_rounds, signif_level, thresholdout_threshold, thresholdout_sigma, thresholdout_noise_distribution, verbose = FALSE, sanity_checks = TRUE) {
-  tuple = data_fun()
+fit_models = function(tuple, classifier, n_adapt_rounds, signif_level, thresholdout_threshold, thresholdout_sigma, thresholdout_noise_distribution, verbose = FALSE, sanity_checks = TRUE) {
   tname = tuple$tname
   bname = tuple$bname
   p = tuple$p
@@ -163,7 +162,12 @@ fit_models = function(data_fun, classifier, n_adapt_rounds, signif_level, thresh
 #' @return list(n_train = n_train, x_train_total = x_train_total, y_train_total = y_train_total, x_holdout = x_holdout, y_holdout = y_holdout, x_test = x_test, y_test = y_test, tname = tname, bname = bname, p = p)
 #' @examples 
 #' demo_data_fun(mlr::sonar.task)
-demo_data_fun = function(task = mlr::sonar.task) {
+demo_data_fun = function(instance = NULL) {
+  if (is.null(instance)) {
+    task = mlr::sonar.task
+  } else {
+    stop("demo_data_fun could only accept instance = NULL")
+  }
   tname = mlr::getTaskTargetNames(task)
   bname = mlr::getTaskDesc(task)$negative
   p = mlr::getTaskNFeats(task)
@@ -208,7 +212,7 @@ demo_data_fun = function(task = mlr::sonar.task) {
 #' @return table of results in ThreasholdoutAUC format
 #' @examples
 #' run_sim()
-run_sim <- function(data_fun = demo_data_fun, method = "glm", conf = NULL) {
+run_sim <- function(data_fun = demo_data_fun, method = "glm", conf = NULL, instance = NULL) {
   if (is.null(conf)) {
    conf = list(n_adapt_rounds = 10
   ,signif_level = 0.0001           # cutoff level used to determine which predictors to consider in each round based on their p-values. set small here for bigger parsimosmally for quick convergence
@@ -218,8 +222,8 @@ run_sim <- function(data_fun = demo_data_fun, method = "glm", conf = NULL) {
   ,verbose = TRUE
   ,sanity_checks = FALSE
   )}
-
-  sim_out <- fit_models(data_fun = data_fun, classifier = method, n_adapt_rounds = conf$n_adapt_rounds, signif_level = conf$signif_level, thresholdout_threshold = conf$thresholdout_threshold, thresholdout_sigma = conf$thresholdout_sigma, thresholdout_noise_distribution = conf$thresholdout_noise_distribution, verbose = conf$verbose, sanity_checks = conf$sanity_checks)
+  tuple = data_fun(instance)
+  sim_out <- fit_models(tuple = tuple, classifier = method, n_adapt_rounds = conf$n_adapt_rounds, signif_level = conf$signif_level, thresholdout_threshold = conf$thresholdout_threshold, thresholdout_sigma = conf$thresholdout_sigma, thresholdout_noise_distribution = conf$thresholdout_noise_distribution, verbose = conf$verbose, sanity_checks = conf$sanity_checks)
 
 
   results <- mutate(sim_out$auc_by_round_df, method = method)
