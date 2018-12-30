@@ -9,11 +9,11 @@ library(tictoc)
 #--- load functions
 
 # functions to calculate p-values
-source("../functions/p-values.R")
+source("functions/p-values.R")
 # a function to fit classification models for every subset of the most significant predictors
-source("../functions/refactor_fit_model_for_every_subset.R")
+source("functions/refactor_fit_model_for_every_subset.R")
 # thresholdout algorithm
-source("../functions/thresholdout_auc.R")
+source("functions/thresholdout_auc.R")
 
 
 #--- A function that successively fits classifiers of specified type on variables selected via

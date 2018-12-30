@@ -4,9 +4,7 @@
 # bname is the second factor level in character form of the target
 # refactor is done as less as possible to keep a good comparision with original code
 get_auc <- function(tname, bname, fitted_model, features, x_train, y_train,
-                    x_holdout, y_holdout, p_holdout, x_test, y_test) {
-  cv_auc <- max(fitted_model$results$ROC)
-
+                    x_holdout, y_holdout, p_holdout, x_test, y_test) { cv_auc <- max(fitted_model$results$ROC) 
   # get a new CV AUC for the model with the best parameters using several
   # repeats to make it more reliable (also the best CV score of fitted_model
   # may be inflated due to randomness)
