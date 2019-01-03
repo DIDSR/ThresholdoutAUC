@@ -65,6 +65,7 @@ fit_model_for_every_subset <- function(tname, bname, classifier, x_train, y_trai
                                        signif_level, verbose, sanity_checks) {
   # compute 2-sample t-statistics on train data
   labelvec = unique(y_train)
+  if (length(labelvec) == 1L) stop("only one level of y_train")
   p_values <- rep(NA, p)
   t_stat <- rep(NA, p)
   t_degf <- length(y_train) - 2
@@ -160,7 +161,7 @@ fit_model_for_every_subset <- function(tname, bname, classifier, x_train, y_trai
         if (is.null(auc)) {
           auc <- auc_i
         } else {
-          auc <- bind_rows(auc, auc_i)
+          auc <- bind_rows(auc, auc_i)   # each subsets add a row to auc table
         }
       }
     }

@@ -43,9 +43,13 @@ fit_models = function(tuple, classifier, n_adapt_rounds, signif_level, threshold
   if (verbose) {
     print("Fitting initial model")
   }
+
   # define train data for this iteration
-  x_train <- x_train_total[1:n_train, ]
-  y_train <- y_train_total[1:n_train]
+  # with several repetitions, we can get a unbiased version of tr_ind_total
+  tr_ind_total = sample(n_train_total)
+
+  x_train <- x_train_total[tr_ind_total[1:n_train], ]
+  y_train <- y_train_total[tr_ind_total[1:n_train]]
 
   # fit only one model: the one with the two most significant features
   model_fit_results <- fit_model_for_every_subset(tname = tname, bname = bname, classifier = classifier,
@@ -56,11 +60,19 @@ fit_models = function(tuple, classifier, n_adapt_rounds, signif_level, threshold
                                                   features_to_keep = features_to_keep,
                                                   signif_level = 0, # (this forces the function to consider 2 most significant features only)
                                                   verbose = F, sanity_checks = T)
-
   if (length(model_fit_results$fitted_models) > 1) {
     stop("Something went wrong when fitting initial model!")
   }
 
+  function() {  # anonymous function for debug
+    model_fit_results$selected_features
+    model = model_fit_results$fitted_models[[1L]]
+    class(model)
+    model_fit_results$auc$test_auc
+    model_fit_results$auc$holdout_auc
+  }
+
+  ## the following lines are only executed once!
   auc <- model_fit_results$auc
   fitted_models <- model_fit_results$fitted_models
   selected_features <- model_fit_results$selected_features
@@ -94,8 +106,8 @@ fit_models = function(tuple, classifier, n_adapt_rounds, signif_level, threshold
     }
 
     # define train data for this iteration
-    x_train <- x_train_total[1:(n_train + round_ind * n_train_increase), ]
-    y_train <- y_train_total[1:(n_train + round_ind * n_train_increase)]
+    x_train <- x_train_total[tr_ind_total[1:(n_train + round_ind * n_train_increase)], ]
+    y_train <- y_train_total[tr_ind_total[1:(n_train + round_ind * n_train_increase)]]
 
     # fit models with different numbers of features
     model_fit_results <- fit_model_for_every_subset(tname = tname, bname = bname, classifier = classifier,
@@ -106,25 +118,30 @@ fit_models = function(tuple, classifier, n_adapt_rounds, signif_level, threshold
                                                     features_to_keep = features_to_keep,
                                                     signif_level = signif_level,
                                                     verbose = verbose, sanity_checks = sanity_checks)
-    auc <- model_fit_results$auc
+    auc <- model_fit_results$auc    # multiple rows, each row is a subset of features
     fitted_models <- model_fit_results$fitted_models
     selected_features <- model_fit_results$selected_features
     p_values <- model_fit_results$p_values
+    print("model_fit_results")
     rm(model_fit_results)
 
     # get the thresholdout auc
     th_auc_vec <- rep(NA, nrow(auc))
+
+
     for (model_ind in 1:nrow(auc)) {
       temp <- thresholdout_auc(thresholdout_params = thresholdout_params,
                                train_auc = auc$repeatedcv_auc[model_ind],
                                holdout_auc = auc$holdout_auc[model_ind])
+      # model selection (select the best subset of features)
       th_auc_vec[model_ind] <- temp$thresholdout_auc
       thresholdout_params <- temp$params
     }
     auc <- mutate(auc, thresholdout_auc = th_auc_vec)
 
     # package results
-    best_model_ind <- which.max(auc$thresholdout_auc)
+    # choose the best up till now
+    best_model_ind <- which.max(auc$thresholdout_auc)  # use thresholdout result as model selection indicator
     # (the recorded thresholdout_auc is not useful for model evaluation,
     # because it captures an instantiation where the added noise happened
     # to be extremely large and positive. So recalculate the Thresholdout
@@ -139,8 +156,15 @@ fit_models = function(tuple, classifier, n_adapt_rounds, signif_level, threshold
     holdout_access_by_round <- c(holdout_access_by_round, nrow(auc) + 1)
     cum_budget_decrease_by_round <- c(cum_budget_decrease_by_round,
                                       thresholdout_params$budget_utilized)
+    # combine results from previous rounds
+    auc[, "train_auc"]
+    auc[, "test_auc"]
+    auc[, "holdout_auc"]  # auc has the number of rows which is the subset feature combination
+    print(best_model_ind)
+    print(auc_by_round_df)
     auc_by_round_df <- bind_rows(auc_by_round_df,
                                  mutate(auc[best_model_ind, ], round = round_ind))
+    # auc_by_round_df$dataset
   }
 
   auc_by_round_df <- auc_by_round_df %>% gather(dataset, auc, -round, -n_train)
@@ -162,7 +186,7 @@ fit_models = function(tuple, classifier, n_adapt_rounds, signif_level, threshold
 #' @return list(n_train = n_train, x_train_total = x_train_total, y_train_total = y_train_total, x_holdout = x_holdout, y_holdout = y_holdout, x_test = x_test, y_test = y_test, tname = tname, bname = bname, p = p)
 #' @examples 
 #' demo_data_fun(mlr::sonar.task)
-demo_data_fun = function(instance = NULL) {
+demo_data_fun = function(instance = NULL, conf = NULL) {
   if (is.null(instance)) {
     task = mlr::sonar.task
   } else {
@@ -222,7 +246,7 @@ run_sim <- function(data_fun = demo_data_fun, method = "glm", conf = NULL, insta
   ,verbose = TRUE
   ,sanity_checks = FALSE
   )}
-  tuple = data_fun(instance)
+  tuple = data_fun(instance = instance, conf = conf)
   sim_out <- fit_models(tuple = tuple, classifier = method, n_adapt_rounds = conf$n_adapt_rounds, signif_level = conf$signif_level, thresholdout_threshold = conf$thresholdout_threshold, thresholdout_sigma = conf$thresholdout_sigma, thresholdout_noise_distribution = conf$thresholdout_noise_distribution, verbose = conf$verbose, sanity_checks = conf$sanity_checks)
 
 
