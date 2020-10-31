@@ -1,3 +1,4 @@
+## These lines are for debugging purposes:
 #library(tidyverse)
 #library(caret)
 #library(ROCR)
@@ -14,6 +15,8 @@
 #classifier <- "xgbTree"
 #ran <- 2020 + iter_i
 #set.seed(ran)
+##----------------------------
+
 
 #--- A function that successively fits classifiers of specified type on variables selected via
 # 2-sample t-tests. Each model is fit with an increased number of cases,
@@ -249,6 +252,7 @@ fit_models_rsna_ich <- function(classifier = "glmnet", iter_i, n_train,
               pos_prop_holdout = pos_prop_holdout,
               pos_prop_test = pos_prop_test))
 }
+
 
 #--- a function to run the simulation one time
 run_sim <- function(method="glmnet", iter_i, p, RData_save_path = NULL, ...) {

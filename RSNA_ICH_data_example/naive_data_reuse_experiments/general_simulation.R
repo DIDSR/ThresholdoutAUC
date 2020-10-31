@@ -1,3 +1,4 @@
+## These lines are for debugging:
 #library(tidyverse)
 #library(caret)
 #library(ROCR)
@@ -13,6 +14,8 @@
 # iter_i <- 49
 # set.seed(2020 + iter_i)
 # n_adapt_rounds <- 3
+##--------------------
+
 
 #--- A function that successively fits classifiers of specified type on variables selected via
 # 2-sample t-tests. Each model is fit with an increased number of cases,

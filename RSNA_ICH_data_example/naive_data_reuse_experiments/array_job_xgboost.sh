@@ -7,7 +7,7 @@
 #$ -pe thread 23
 #$ -l opa  # grabs most recent machines with 24 and 40 CPU cores
 #$ -l h_rt=048:00:00
-#$ -t 11-100
+#$ -t 1-100
 
 echo "Running job $JOB_NAME ($JOB_ID) on $HOSTNAME"
 
