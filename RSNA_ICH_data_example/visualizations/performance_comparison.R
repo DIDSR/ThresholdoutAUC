@@ -5,8 +5,8 @@ library(RColorBrewer)
 source("../set_params_RSNA-ICH.R")
 source("../../functions/thresholdout_auc.R")
 
-thresholdout_csv <- "../thresholdout_simulation/results/thresh_random_all_results.csv"
-naive_csv <- "../naive_data_reuse_simulation/results/naive_random_all_results.csv"
+thresholdout_csv <- "../thresholdout_experiments/results/thresh_random_all_results.csv"
+naive_csv <- "../naive_data_reuse_experiments/results/naive_random_all_results.csv"
 
 thresholdout <- read_csv(thresholdout_csv)
 naive_holdout <- read_csv(naive_csv)
@@ -45,8 +45,10 @@ auc_df <- auc_df %>%
                                      "True performance", "Perfect classifier"),
                           ordered = TRUE))
 
-labs1 <- c("Training performance (cross-validation)", "Test performance (naive holdout reuse)",
-           expression(Thresholdout["AUC"]~output), "True performance (large independent dataset)") # NEW and the related places
+labs1 <- c("Training performance (cross-validation)",
+           "Test performance (naive test data reuse)",
+           expression(Thresholdout["AUC"]~output),
+           "True performance (large independent dataset)") # NEW and the related places
 guide1 <- guide_legend(nrow = 2, byrow = TRUE) # NEW and the related places
 
 auc_df %>%
@@ -168,9 +170,9 @@ prop_budget_decrease_df <- results %>%
   filter(round > 0)
 
 mean(prop_budget_decrease_df$prop_budget)
-# [1] 0.9284104
+# [1] 0.9283471
 sd(prop_budget_decrease_df$prop_budget)
-# [1] 0.06701206
+# [1] 0.06685119
 
 prop_budget_decrease_df %>%
   select(-holdout_access_count, -budget_decrease_by_round) %>%
@@ -181,8 +183,8 @@ prop_budget_decrease_df %>%
 # # A tibble: 2 x 3
 #   round prop_budget_avg prop_budget_sd
 #   <dbl>           <dbl>          <dbl>
-# 1     1           0.919         0.0821
-# 2    10           0.912         0.0735
+# 1     1           0.920         0.0802
+# 2    10           0.911         0.0727
 
 #--- compare the true performance between the naive and ThresholdoutAUC strategies
 
@@ -194,29 +196,80 @@ df_to_plot <- auc_df %>% filter(dataset == "True performance") %>%
                                 labels = c("Naive test data reuse",
                                            "Thresholdout")))
 
+# the following averages over data reuse methods and classiers
 overall_auc_mean <- df_to_plot %>%
   filter(round == 1 | round == 10) %>%
   group_by(round) %>%
   summarize(auc = mean(auc_mean))
-overall_auc_mean
-# # A tibble: 2 x 2
-#   round   auc
-#   <dbl> <dbl>
-# 1     1 0.630
-# 2    10 0.698
+print.data.frame(overall_auc_mean, digits = 4)
+#   round    auc
+# 1     1 0.6292
+# 2    10 0.6982
+
+# the following averages over data reuse methods
 auc_mean_by_method <- df_to_plot %>%
   filter(round == 1 | round == 10) %>%
   group_by(round, method) %>%
   summarize(auc = mean(auc_mean))
-auc_mean_by_method
-# # A tibble: 4 x 3
-# # Groups:   round [2]
-#   round method                              auc
-#   <dbl> <fct>                             <dbl>
-# 1     1 "~\"L1- and L2-regularized GLM\"" 0.632
-# 2     1 "~\"XGBoost\""                    0.628
-# 3    10 "~\"L1- and L2-regularized GLM\"" 0.691
-# 4    10 "~\"XGBoost\""                    0.705
+print.data.frame(auc_mean_by_method, digits = 4)
+# (I permuted the rows here for clarity:)
+#   round                        method    auc
+#
+# 1     1 ~"L1- and L2-regularized GLM" 0.6315
+# 3    10 ~"L1- and L2-regularized GLM" 0.6909
+#
+# 2     1                    ~"XGBoost" 0.6269
+# 4    10                    ~"XGBoost" 0.7056
+0.7056 - 0.6909
+# [1] 0.0147
+
+# the following averages over classifiers
+auc_mean_by_holdoutreuse <- df_to_plot %>%
+  filter(round == 1 | round == 10) %>%
+  group_by(round, holdout_reuse) %>%
+  summarize(auc = mean(auc_mean))
+print.data.frame(auc_mean_by_holdoutreuse, digits = 4)
+# (I permuted the rows here for clarity:)
+#   round         holdout_reuse    auc
+#
+# 1     1 Naive test data reuse 0.6316
+# 3    10 Naive test data reuse 0.6981
+#
+# 2     1          Thresholdout 0.6267
+# 4    10          Thresholdout 0.6984
+0.6984 - 0.6981
+# [1] 3e-04
+
+auc_mean_by_method_holdoutreuse <- df_to_plot %>%
+  filter(round == 1 | round == 10) %>%
+  select(-dataset, -n_reps)
+print.data.frame(auc_mean_by_method_holdoutreuse, digits = 4)
+#   round                        method         holdout_reuse  auc_mean  auc_sd
+# 1     1 ~"L1- and L2-regularized GLM" Naive test data reuse    0.6321 0.03547
+# 2     1 ~"L1- and L2-regularized GLM"          Thresholdout    0.6309 0.03864
+# 3     1                    ~"XGBoost" Naive test data reuse    0.6311 0.03749
+# 4     1                    ~"XGBoost"          Thresholdout    0.6226 0.04591
+# 5    10 ~"L1- and L2-regularized GLM" Naive test data reuse    0.6937 0.02682
+# 6    10 ~"L1- and L2-regularized GLM"          Thresholdout    0.6881 0.02701
+# 7    10                    ~"XGBoost" Naive test data reuse    0.7025 0.02635
+# 8    10                    ~"XGBoost"          Thresholdout    0.7087 0.02775
+
+# (I permuted the rows here for clarity:)
+#   round                        method         holdout_reuse     auc
+#
+# 1     1 ~"L1- and L2-regularized GLM" Naive test data reuse  0.6321
+# 5    10 ~"L1- and L2-regularized GLM" Naive test data reuse  0.6937
+#
+# 2     1 ~"L1- and L2-regularized GLM"          Thresholdout  0.6309
+# 6    10 ~"L1- and L2-regularized GLM"          Thresholdout  0.6881
+#
+# 3     1                    ~"XGBoost" Naive test data reuse  0.6311
+# 7    10                    ~"XGBoost" Naive test data reuse  0.7025
+#
+# 4     1                    ~"XGBoost"          Thresholdout  0.6226
+# 8    10                    ~"XGBoost"          Thresholdout  0.7087
+#
+
 
 pal <- brewer.pal(3, "Dark2")
 g <- guide_legend(nrow = 2, byrow = TRUE)

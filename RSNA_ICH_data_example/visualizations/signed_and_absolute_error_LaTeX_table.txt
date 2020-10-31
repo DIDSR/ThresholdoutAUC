@@ -1,0 +1,15 @@
+% latex table generated in R 4.0.3 by xtable 1.8-4 package
+% Sat Oct 31 11:40:38 2020
+\begin{table}[ht]
+\centering
+\begin{tabular}{rllrrrrrr}
+  \hline
+ & method & holdout\_reuse & Mean signed error & Median signed error & SD signed error & Mean absolute error & Median absolute error & SD absolute error \\ 
+  \hline
+1 & L1- and L2-regularized GLM & Naive test data reuse & 0.1048 & 0.1098 & 0.0697 & 0.1105 & 0.1099 & 0.0602 \\ 
+  2 & L1- and L2-regularized GLM & Thresholdout & 0.0556 & 0.0509 & 0.0885 & 0.0805 & 0.0636 & 0.0667 \\ 
+  3 & XGBoost & Naive test data reuse & 0.1030 & 0.1046 & 0.0692 & 0.1082 & 0.1061 & 0.0607 \\ 
+  4 & XGBoost & Thresholdout & 0.0498 & 0.0405 & 0.0858 & 0.0744 & 0.0574 & 0.0655 \\ 
+   \hline
+\end{tabular}
+\end{table}

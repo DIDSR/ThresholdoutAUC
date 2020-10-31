@@ -6,8 +6,8 @@ library(xtable)
 source("../set_params_RSNA-ICH.R")
 source("../../functions/thresholdout_auc.R")
 
-thresholdout_csv <- "../thresholdout_simulation/results/thresh_random_all_results.csv"
-naive_csv <- "../naive_data_reuse_simulation/results/naive_random_all_results.csv"
+thresholdout_csv <- "../thresholdout_experiments/results/thresh_random_all_results.csv"
+naive_csv <- "../naive_data_reuse_experiments/results/naive_random_all_results.csv"
 
 naive_holdout <- read_csv(naive_csv)
 thresholdout <- read_csv(thresholdout_csv)
@@ -57,20 +57,20 @@ overall_error_summary_df <- error_df %>% group_by(holdout_reuse) %>%
             "Mean absolute error" = mean(abs_error),
             "Median absolute error" = median(abs_error),
             "SD absolute error" = sd(abs_error))
-tab <- overall_error_summary_df %>% xtable(digits = 4)
-
-print(tab, file = "signed_and_absolute_error_overall_LaTeX_table.txt")
-
-overall_error_summary_df %>% glimpse()
+glimpse(overall_error_summary_df)
 # Rows: 2
 # Columns: 7
-# $ holdout_reuse           <fct> Naive test data reuse, Th…
-# $ `Mean signed error`     <dbl> 0.10370827, 0.05116094
-# $ `Median signed error`   <dbl> 0.10770799, 0.04478623
-# $ `SD signed error`       <dbl> 0.06940799, 0.08709853
-# $ `Mean absolute error`   <dbl> 0.10924786, 0.07684883
-# $ `Median absolute error` <dbl> 0.10874684, 0.06060606
-# $ `SD absolute error`     <dbl> 0.06030903, 0.06554429
+# $ holdout_reuse           <fct> Naive test data reuse, T
+# h…
+# $ `Mean signed error`     <dbl> 0.10390653, 0.05265694
+# $ `Median signed error`   <dbl> 0.10766068, 0.04567933
+# $ `SD signed error`       <dbl> 0.06945360, 0.08719411
+# $ `Mean absolute error`   <dbl> 0.10936303, 0.07744543
+# $ `Median absolute error` <dbl> 0.10871649, 0.06081156
+# $ `SD absolute error`     <dbl> 0.06049394, 0.06615254
+tab <- overall_error_summary_df %>% xtable(digits = 4)
+print(tab, file = "signed_and_absolute_error_overall_LaTeX_table.txt")
+
 
 #--- Plot error distribution (density) by classifier
 
@@ -89,7 +89,6 @@ error_df %>% left_join(avg_error_df) %>%
     geom_vline(aes(xintercept = error_mean, color = holdout_reuse,
                    linetype = holdout_reuse)) +
     facet_wrap(~method, nrow=2) +
-    #scale_color_brewer(palette = "Dark2") +
     scale_linetype_manual(values = c("Naive test data reuse" = 1,
                                      "Thresholdout" = 2),
                           name = "",

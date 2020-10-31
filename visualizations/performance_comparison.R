@@ -48,6 +48,11 @@ auc_df <- auc_df %>%
                                      "True performance", "Perfect classifier"),
                           ordered = TRUE))
 
+labs1 <- c("Training performance (cross-validation)",
+           "Test performance (naive test data reuse)",
+           expression(Thresholdout["AUC"]~output),
+           "True performance (large independent dataset)") # NEW and the related places
+
 auc_df %>%
   filter(!(holdout_reuse == "Thresholdout" & dataset == "Test performance")) %>%
   filter(dataset != "Resubstitution", dataset != "Perfect classifier") %>%
@@ -60,8 +65,9 @@ auc_df %>%
     geom_ribbon(aes(x = round, ymin = auc_mean - 2*auc_sd/sqrt(n_reps),
                     ymax = auc_mean + 2*auc_sd/sqrt(n_reps), fill = dataset),
                 alpha = 0.25) +
-    scale_color_brewer(palette = "Dark2") +
-    scale_fill_brewer(palette = "Dark2") +
+    scale_color_brewer(palette = "Dark2", labels = labs1) +
+    scale_fill_brewer(palette = "Dark2", labels = labs1) +
+    scale_linetype_discrete(labels = labs1) +
     facet_grid(holdout_reuse ~ method, labeller = label_parsed) +
     theme_bw() +
     theme(legend.position = "bottom", legend.title = element_blank()) +

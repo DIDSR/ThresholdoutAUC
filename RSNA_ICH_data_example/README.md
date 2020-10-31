@@ -2,7 +2,7 @@ The following steps were used to perform the real data experiments on the RSNA I
 All python code was run in a Docker container environment, whose image is specified by `docker-jupyter/Dockerfile`.
 
 0. **Data source**:
-  - The data has to be downloaded from <https://www.kaggle.com/c/rsna-intracranial-hemorrhage-detection>, and extracted in the directory `data`.
+    - The data has to be downloaded from <https://www.kaggle.com/c/rsna-intracranial-hemorrhage-detection>, and extracted in the directory `data`.
 
 1. **Image preprocessing**:
     - The source code and Jupyter notebooks, which are used for image preprocessing and deep learning feature extraction, are found in the folder `feature_extraction`.

@@ -1,0 +1,21 @@
+% latex table generated in R 4.0.3 by xtable 1.8-4 package
+% Sat Oct 31 12:13:11 2020
+\begin{table}[ht]
+\centering
+\begin{tabular}{rllrrrrrr}
+  \hline
+ & method & holdout\_reuse & Mean signed error & Median signed error & SD signed error & Mean absolute error & Median absolute error & SD absolute error \\ 
+  \hline
+1 & Logistic regression (GLM) & Naive test data reuse & 0.074 & 0.072 & 0.046 & 0.075 & 0.072 & 0.043 \\ 
+  2 & Logistic regression (GLM) & Thresholdout & 0.032 & 0.031 & 0.070 & 0.062 & 0.052 & 0.046 \\ 
+  3 & L1- and L2-regularized GLM & Naive test data reuse & 0.073 & 0.072 & 0.048 & 0.076 & 0.072 & 0.043 \\ 
+  4 & L1- and L2-regularized GLM & Thresholdout & 0.033 & 0.031 & 0.070 & 0.062 & 0.053 & 0.047 \\ 
+  5 & SVM with linear kernel & Naive test data reuse & 0.068 & 0.067 & 0.047 & 0.071 & 0.067 & 0.042 \\ 
+  6 & SVM with linear kernel & Thresholdout & 0.028 & 0.027 & 0.069 & 0.060 & 0.051 & 0.044 \\ 
+  7 & Random Forest & Naive test data reuse & 0.050 & 0.051 & 0.046 & 0.056 & 0.052 & 0.037 \\ 
+  8 & Random Forest & Thresholdout & 0.030 & 0.031 & 0.062 & 0.055 & 0.048 & 0.042 \\ 
+  9 & AdaBoost & Naive test data reuse & 0.044 & 0.044 & 0.047 & 0.053 & 0.047 & 0.037 \\ 
+  10 & AdaBoost & Thresholdout & 0.027 & 0.027 & 0.058 & 0.051 & 0.044 & 0.039 \\ 
+   \hline
+\end{tabular}
+\end{table}
