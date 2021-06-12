@@ -59,6 +59,7 @@ avg_error_df <- error_df %>%
   summarize(error_mean = mean(error), error_sd = sd(error), n_reps = n()) %>% tbl_df()
 
 # (GLM and Adaboost only - PDF)
+pal <- brewer.pal(4, "Dark2")
 error_df %>% left_join(avg_error_df) %>%
   filter(method == "Logistic regression (GLM)" | method == "AdaBoost") %>%
   ggplot(aes(x = error, y = ..density..,
@@ -67,7 +68,16 @@ error_df %>% left_join(avg_error_df) %>%
     geom_vline(aes(xintercept = error_mean, color = holdout_reuse,
                    linetype = holdout_reuse)) +
     facet_wrap(~method) +
-    scale_color_brewer(palette = "Dark2") +
+    scale_linetype_manual(values = c("Naive test data reuse" = 1,
+                                     "Thresholdout" = 2),
+                          name = "",
+                          labels = c(bquote(~"Naive test data reuse"),
+                                     bquote(~Thresholdout[AUC]))) +
+    scale_color_manual(values = c("Naive test data reuse" = pal[2],
+                                  "Thresholdout" = pal[3]),
+                       name = "",
+                       labels = c(bquote(~"Naive test data reuse"),
+                                  bquote(~Thresholdout[AUC]))) +
     theme_bw() +
     xlab("Error (reported AUC minus true AUC)") +
     ylab("Density") +
@@ -90,8 +100,8 @@ error_df %>% select(method, holdout_reuse, abs_error) %>%
                           name = "",
                           labels = c(bquote(~"Naive test data reuse"),
                                      bquote(~Thresholdout[AUC]))) +
-    scale_color_manual(values = c("Naive test data reuse" = pal[1],
-                                  "Thresholdout" = pal[2]),
+    scale_color_manual(values = c("Naive test data reuse" = pal[2],
+                                  "Thresholdout" = pal[3]),
                        name = "",
                        labels = c(bquote(~"Naive test data reuse"),
                                   bquote(~Thresholdout[AUC]))) +

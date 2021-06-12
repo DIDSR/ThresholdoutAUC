@@ -1,0 +1,13 @@
+% latex table generated in R 4.0.3 by xtable 1.8-4 package
+% Sat Oct 31 11:40:50 2020
+\begin{table}[ht]
+\centering
+\begin{tabular}{rlrrrrrr}
+  \hline
+ & holdout\_reuse & Mean signed error & Median signed error & SD signed error & Mean absolute error & Median absolute error & SD absolute error \\ 
+  \hline
+1 & Naive test data reuse & 0.1039 & 0.1077 & 0.0695 & 0.1094 & 0.1087 & 0.0605 \\ 
+  2 & Thresholdout & 0.0527 & 0.0457 & 0.0872 & 0.0774 & 0.0608 & 0.0662 \\ 
+   \hline
+\end{tabular}
+\end{table}
