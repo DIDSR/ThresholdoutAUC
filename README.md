@@ -4,7 +4,7 @@ The ThresholdoutAUC procedure (based on [the Thresholdout or reusable holdout me
 
 The ThresholdoutAUC procedure has been proposed and investigated in:
 
-[Gossmann2021] Gossmann, A., Pezeshk, A., Wang, Y.-P., &amp; Sahiner, B. (2021). Test Data Reuse for the Evaluation of Continuously Evolving Classification Algorithms Using the Area under the Receiver Operating Characteristic Curve. *SIAM Journal on Mathematics of Data Science*, 692–714. [https://doi.org/10.1137/20M1333110](https://doi.org/10.1137/20M1333110)
+**[Gossmann2021]** Gossmann, A., Pezeshk, A., Wang, Y.-P., &amp; Sahiner, B. (2021). Test Data Reuse for the Evaluation of Continuously Evolving Classification Algorithms Using the Area under the Receiver Operating Characteristic Curve. *SIAM Journal on Mathematics of Data Science*, 692–714. [https://doi.org/10.1137/20M1333110](https://doi.org/10.1137/20M1333110)
 
 This repository includes source code that can be used to reproduce the extensive simulation studies and all real data experiments from [Gossmann2021], which show that under the considered experimental conditions ThresholdoutAUC substantially reduces the problem of overfitting to the test data at the cost of a mild additional uncertainty on the reported test performance.
 

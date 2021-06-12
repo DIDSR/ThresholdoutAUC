@@ -12,7 +12,7 @@ All Python code was run in a Docker container environment, whose image is specif
 
 2. Data splitting (by patient ID):
     - The Python source code and Jupyter notebooks, which are used for image preprocessing and deep learning feature extraction, are found in the subdirectory `feature_extraction`.
-    - Run the Jupyter notebook [split_by_parient.ipynb](feature_extraction/split_by_parient.ipynb) in order to define many data subsets (to be used in experiments) which do not overlap with respect to image or patient ID.
+    - Run the Jupyter notebook [split_by_patient.ipynb](feature_extraction/split_by_patient.ipynb) in order to define many data subsets (to be used in experiments) which do not overlap with respect to image or patient ID.
 
 3. **Deep learning feature extraction** with an ImageNet-trained CNN:
     - The Python source code and Jupyter notebooks, which are used for image preprocessing and deep learning feature extraction, are found in the subdirectory `feature_extraction`.
