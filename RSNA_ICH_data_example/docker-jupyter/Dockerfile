@@ -1,8 +1,3 @@
-# Run with:
-#docker run -p 9999:9999 --gpus all --ipc=host --name <containername> --volume=$PWD:/app --volume=/home/alexej.gossmann/github/kaggle-rsna-intracranial-hemorrhage-detection/data:/data <imagename>
-# to use a specific gpu (e.g., gpu number 0):
-#docker run -p 9999:9999 --gpus '"device=0"' --ipc=host --name <containername> --volume=$PWD:/app --volume=/home/alexej.gossmann/github/kaggle-rsna-intracranial-hemorrhage-detection/data:/data <imagename>
-
 FROM tensorflow/tensorflow:2.3.0-gpu-jupyter
 
 # Install some basic utilities
@@ -25,7 +20,11 @@ RUN pip install pandas==0.25.1 && \
     pip install scikit-learn==0.21.2 && \
     pip install scikit-image==0.15.0 && \
     pip install tqdm==4.32.1 && \
-    pip install opencv-python
+    pip install opencv-python==4.4.0.42 && \
+    pip install pydicom==2.0.0 && \
+    pip install torch==1.6.0 && \
+    pip install torchvision==0.7.0 && \
+    pip install albumentations==0.5.0
 
 # Create a working directory
 RUN mkdir /app
